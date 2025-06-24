@@ -7,6 +7,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { schemaLogin, type LoginSchema } from '../../utils/rule'
 import { AppContext } from '../../contexts/app.context'
 import { isAdmin } from '../../utils/util'
+import Swal from 'sweetalert2'
 type FormData = LoginSchema
 
 export default function Login() {
@@ -49,8 +50,11 @@ export default function Login() {
           } else if (message.includes('Sai mật khẩu, vui lòng thử lại')) {
             setError('password', { type: 'manual', message: 'Sai mật khẩu, vui lòng thử lại' })
           } else {
-            // fallback lỗi chung nếu có
-            console.error('Unhandled login error:', message)
+            Swal.fire({
+              icon: 'error',
+              title: 'Lỗi',
+              text: message
+            })
           }
         }
       }

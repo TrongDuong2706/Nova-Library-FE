@@ -1,4 +1,4 @@
-import  { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getAuthors } from '../../apis/author.api'
@@ -20,6 +20,8 @@ interface BookFormData {
   images: FileList
   stock: number
   status: number
+  isbn: string
+  publicationDate: string
 }
 
 export default function EditBookPopup({ isOpen, onClose, bookId }: EditBookPopupProps) {
@@ -49,14 +51,16 @@ export default function EditBookPopup({ isOpen, onClose, bookId }: EditBookPopup
 
   useEffect(() => {
     if (bookData) {
-      const { title, description, author, genre, stock, status } = bookData.data.result
+      const { title, description, author, genre, stock, status, isbn, publicationDate } = bookData.data.result
       reset({
         title,
         description,
         authorId: author.id,
         genreId: genre.id,
         stock,
-        status // chuyển về boolean cho checkbox
+        status,
+        isbn,
+        publicationDate
       })
     }
   }, [bookData, reset])
@@ -80,14 +84,15 @@ export default function EditBookPopup({ isOpen, onClose, bookId }: EditBookPopup
 
   const onSubmit = handleSubmit((data) => {
     const formData = new FormData()
-
     const book = {
       title: data.title,
       description: data.description,
       authorId: data.authorId,
       genreId: data.genreId,
       stock: data.stock,
-      status: data.status ? 1 : 0
+      status: data.status ? 1 : 0,
+      isbn: data.isbn,
+      publicationDate: data.publicationDate
     }
 
     formData.append('books', new Blob([JSON.stringify(book)], { type: 'application/json' }))
@@ -114,14 +119,85 @@ export default function EditBookPopup({ isOpen, onClose, bookId }: EditBookPopup
         <h2 className='text-xl font-semibold text-gray-800 mb-4'>✏️ Chỉnh sửa sách</h2>
 
         <form className='space-y-4' onSubmit={onSubmit}>
-          <div>
-            <label className='text-sm font-medium text-gray-700'>Tiêu đề</label>
-            <input
-              type='text'
-              {...register('title', { required: 'Tiêu đề là bắt buộc' })}
-              className='w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg'
-            />
-            {errors.title && <p className='text-red-500 text-sm mt-1'>{errors.title.message}</p>}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div>
+              <label className='text-sm font-medium text-gray-700'>Tiêu đề</label>
+              <input
+                type='text'
+                {...register('title', { required: 'Tiêu đề là bắt buộc' })}
+                className='w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg'
+              />
+              {errors.title && <p className='text-red-500 text-sm mt-1'>{errors.title.message}</p>}
+            </div>
+
+            <div>
+              <label className='text-sm font-medium text-gray-700'>ISBN</label>
+              <input
+                type='text'
+                {...register('isbn', {
+                  required: 'ISBN là bắt buộc',
+                  pattern: {
+                    value: /^\d{13}$/,
+                    message: 'ISBN phải gồm đúng 13 chữ số'
+                  }
+                })}
+                className='w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg'
+              />
+              {errors.isbn && <p className='text-red-500 text-sm mt-1'>{errors.isbn.message}</p>}
+            </div>
+
+            <div>
+              <label className='text-sm font-medium text-gray-700'>Tác giả</label>
+              <select
+                {...register('authorId', { required: 'Chọn tác giả' })}
+                className='w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg'
+              >
+                <option value=''>-- Chọn tác giả --</option>
+                {authorsData?.data.result.elements.map((author) => (
+                  <option key={author.id} value={author.id}>
+                    {author.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className='text-sm font-medium text-gray-700'>Thể loại</label>
+              <select
+                {...register('genreId', { required: 'Chọn thể loại' })}
+                className='w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg'
+              >
+                <option value=''>-- Chọn thể loại --</option>
+                {genresData?.data.result.elements.map((genre) => (
+                  <option key={genre.id} value={genre.id}>
+                    {genre.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className='text-sm font-medium text-gray-700'>Số lượng</label>
+              <input
+                type='number'
+                {...register('stock', {
+                  required: 'Số lượng là bắt buộc',
+                  valueAsNumber: true
+                })}
+                className='w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg'
+              />
+              {errors.stock && <p className='text-red-500 text-sm mt-1'>{errors.stock.message}</p>}
+            </div>
+
+            <div>
+              <label className='text-sm font-medium text-gray-700'>Ngày xuất bản</label>
+              <input
+                type='date'
+                {...register('publicationDate', { required: 'Ngày xuất bản là bắt buộc' })}
+                className='w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg'
+              />
+              {errors.publicationDate && <p className='text-red-500 text-sm mt-1'>{errors.publicationDate.message}</p>}
+            </div>
           </div>
 
           <div>
@@ -132,49 +208,6 @@ export default function EditBookPopup({ isOpen, onClose, bookId }: EditBookPopup
               rows={3}
             />
             {errors.description && <p className='text-red-500 text-sm mt-1'>{errors.description.message}</p>}
-          </div>
-
-          <div>
-            <label className='text-sm font-medium text-gray-700'>Tác giả</label>
-            <select
-              {...register('authorId', { required: 'Chọn tác giả' })}
-              className='w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg'
-            >
-              <option value=''>-- Chọn tác giả --</option>
-              {authorsData?.data.result.elements.map((author) => (
-                <option key={author.id} value={author.id}>
-                  {author.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className='text-sm font-medium text-gray-700'>Thể loại</label>
-            <select
-              {...register('genreId', { required: 'Chọn thể loại' })}
-              className='w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg'
-            >
-              <option value=''>-- Chọn thể loại --</option>
-              {genresData?.data.result.elements.map((genre) => (
-                <option key={genre.id} value={genre.id}>
-                  {genre.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className='text-sm font-medium text-gray-700'>Số lượng</label>
-            <input
-              type='number'
-              {...register('stock', {
-                required: 'Số lượng là bắt buộc',
-                valueAsNumber: true
-              })}
-              className='w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg'
-            />
-            {errors.stock && <p className='text-red-500 text-sm mt-1'>{errors.stock.message}</p>}
           </div>
 
           <div>

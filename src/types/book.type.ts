@@ -28,6 +28,8 @@ export interface Book {
   images: Image[]
   author: Author
   genre: Genre
+  isbn: string
+  publicationDate: string
   status: number
   stock: number
 }
@@ -69,6 +71,8 @@ export type BookSingleResponse = {
   createAt: Date
   stock: number
   status: number
+  isbn: string
+  publicationDate: string
   images: Image[]
 }
 

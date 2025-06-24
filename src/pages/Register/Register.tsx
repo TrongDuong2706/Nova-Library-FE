@@ -93,6 +93,28 @@ export default function Register() {
           </div>
 
           <div>
+            <label className='text-sm'>Email</label>
+            <input
+              type='email'
+              {...register('email')}
+              placeholder='Enter your email'
+              className='w-full mt-1 px-4 py-2 rounded bg-transparent border border-gray-400 text-sm focus:outline-none focus:border-white'
+            />
+            {errors.email && <p className='text-red-300 text-xs mt-1'>{errors.email.message}</p>}
+          </div>
+
+          <div>
+            <label className='text-sm'>Phone Number</label>
+            <input
+              type='text'
+              {...register('phoneNumber')}
+              placeholder='Enter your phone number'
+              className='w-full mt-1 px-4 py-2 rounded bg-transparent border border-gray-400 text-sm focus:outline-none focus:border-white'
+            />
+            {errors.phoneNumber && <p className='text-red-300 text-xs mt-1'>{errors.phoneNumber.message}</p>}
+          </div>
+
+          <div>
             <label className='text-sm'>Password</label>
             <input
               type='password'

@@ -14,6 +14,7 @@ import Home from './pages/Home/Home'
 import BookDetail from './pages/BookDetail/BookDetail'
 import MyBorrow from './pages/MyBorrow/MyBorrow'
 import FavoritePage from './pages/FavouritePage/FavoritePage'
+import ListUser from './pages/Admin/AdminUserManagement/ListUser'
 
 export default function useRouteElements() {
   // function ProtectedRoute() {
@@ -103,6 +104,14 @@ export default function useRouteElements() {
           element: (
             <AdminLayout>
               <ListBorrow />
+            </AdminLayout>
+          )
+        },
+        {
+          path: 'users',
+          element: (
+            <AdminLayout>
+              <ListUser />
             </AdminLayout>
           )
         }

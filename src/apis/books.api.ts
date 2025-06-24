@@ -33,5 +33,17 @@ export const getBooksWithFilter = (
     params: { authorName, genreName, title, description, page, size }
   })
 
+export const getBooksWithAdminFilter = (
+  authorName: string | null = null,
+  genreName: string | null = null,
+  title: string | null = null,
+  status: number | null = null,
+  page: number,
+  size: number
+) =>
+  http.get<BookResponse>('/books/filterAdmin', {
+    params: { authorName, genreName, title, status, page, size }
+  })
+
 export const softDeleteBook = (bookId: string) => http.delete(`/books/${bookId}`)
 export const countBook = () => http.get('/books/countBook')

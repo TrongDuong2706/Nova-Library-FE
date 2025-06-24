@@ -1,5 +1,5 @@
 import * as yup from 'yup'
-//const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 
 export const schema = yup.object({
   username: yup
@@ -7,12 +7,12 @@ export const schema = yup.object({
     .required('Tài khoản không được để trống')
     .min(5, 'Độ dài từ 5-160 ký tự')
     .max(160, 'Độ dài từ 5-160 ký tự'),
-  // email: yup
-  //   .string()
-  //   .required('Email không được để trống')
-  //   .matches(emailRegex, 'Email không đúng định dạng') // Dùng regex kiểm tra
-  //   .min(5, 'Độ dài từ 5-160 ký tự')
-  //   .max(160, 'Độ dài từ 5-160 ký tự'),
+  email: yup
+    .string()
+    .required('Email không được để trống')
+    .matches(emailRegex, 'Email không đúng định dạng') // Dùng regex kiểm tra
+    .min(5, 'Độ dài từ 5-160 ký tự')
+    .max(160, 'Độ dài từ 5-160 ký tự'),
   password: yup
     .string()
     .required('Mật khẩu không được để trống')
@@ -33,7 +33,11 @@ export const schema = yup.object({
     .string()
     .required('Vui lòng nhập lại họ')
     .min(1, 'Độ dài từ 6 - 160 ký tự')
-    .max(160, 'Độ dài từ 6 đến 160 ký tự')
+    .max(160, 'Độ dài từ 6 đến 160 ký tự'),
+  phoneNumber: yup
+    .string()
+    .required('Phone number is required')
+    .matches(/^[0-9]{10}$/, 'Phone number must be 10 digits')
 })
 
 export const schemaLogin = yup.object({

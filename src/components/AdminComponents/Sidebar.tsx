@@ -19,6 +19,9 @@ export default function Sidebar() {
         <Link className='hover:bg-purple-600 px-3 py-2 rounded-md' to='/admin/borrows'>
           📄 Borrowing Orders
         </Link>
+        <Link className='hover:bg-purple-600 px-3 py-2 rounded-md' to='/admin/users'>
+          👤 Users
+        </Link>
       </nav>
     </aside>
   )
