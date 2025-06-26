@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getOneBook } from '../../apis/books.api'
 import BorrowPopup from '../../components/BorrowPopup/BorrowPopup'
+import Slider from 'react-slick'
 
 // Dữ liệu giả lập (không thay đổi)
 
@@ -71,13 +72,35 @@ export default function BookDetail() {
           <div className='flex flex-col lg:flex-row gap-8 lg:gap-12'>
             {/* Left Column: Book Cover (Sticky) */}
             <div className='lg:w-1/3 lg:sticky lg:top-24 self-start'>
-              {' '}
-              {/* top-24 = 16 (header) + 8 (padding) */}
-              <img
-                src={book?.images[0].imageUrl}
-                alt={book?.title}
-                className='w-full max-w-sm mx-auto aspect-[2/3] object-cover rounded-lg shadow-2xl shadow-slate-950'
-              />
+              <div className='w-full max-w-sm mx-auto'>
+                {book?.images && book.images.length > 1 ? (
+                  <Slider
+                    dots={true}
+                    infinite={true}
+                    speed={500}
+                    slidesToShow={1}
+                    slidesToScroll={1}
+                    arrows={true}
+                    autoplay={false}
+                  >
+                    {book?.images.map((img, index) => (
+                      <div key={index} className='w-full aspect-[2/3] relative'>
+                        <img
+                          src={img.imageUrl}
+                          alt={`${book.title} ${index + 1}`}
+                          className='w-full h-full object-cover rounded-lg shadow-2xl shadow-slate-950'
+                        />
+                      </div>
+                    ))}
+                  </Slider>
+                ) : (
+                  <img
+                    src={book?.images[0]?.imageUrl}
+                    alt={book?.title}
+                    className='w-full aspect-[2/3] object-cover rounded-lg shadow-2xl shadow-slate-950'
+                  />
+                )}
+              </div>
             </div>
 
             {/* Right Column: Book Information */}
@@ -129,6 +152,14 @@ export default function BookDetail() {
                     <p className='text-slate-400 text-sm leading-snug'>{book?.author.bio}</p>
                   </div>
                 </div>
+              </div>
+
+              {/* Số lượng sách */}
+              <div className='mt-6'>
+                <h2 className='text-xl font-bold mb-3 border-l-4 border-teal-400 pl-3'>Số lượng sách</h2>
+                <p className='text-lg text-slate-300'>
+                  Số lượng sách còn lại: <span className='text-teal-500 font-semibold'>{book?.stock}</span>
+                </p>
               </div>
             </div>
           </div>

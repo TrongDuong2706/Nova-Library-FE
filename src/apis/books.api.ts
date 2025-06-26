@@ -47,3 +47,6 @@ export const getBooksWithAdminFilter = (
 
 export const softDeleteBook = (bookId: string) => http.delete(`/books/${bookId}`)
 export const countBook = () => http.get('/books/countBook')
+
+export const getAllBookZeroStock = (page: number, size: number) =>
+  http.get<BookResponse>('/books/getAllBookZeroStock', { params: { page, size } })

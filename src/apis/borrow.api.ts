@@ -28,3 +28,8 @@ export const getBorrowWithFilter = (
   http.get<BorrowsResponse>('/borrowings/filter', {
     params: { id, name, borrowDate, page, size }
   })
+export const bookRenewal = (borrowId: string, body: { newDueDate: string }) =>
+  http.put(`/borrowings/extends/${borrowId}`, body)
+
+export const getAllOverdueBorrow = (page: number, size: number) =>
+  http.get<BorrowsResponse>('/borrowings/getOverDueStatus', { params: { page, size } })

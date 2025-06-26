@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { Pencil, Trash2, Plus, Search } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 
 import Pagination from '../../../components/Pagination/Pagination'
-import { getUserWithFilter } from '../../../apis/user.api' // Giả sử bạn đã import deleteUser
+import { deleteOneUser, getUserWithFilter } from '../../../apis/user.api' // Giả sử bạn đã import deleteUser
 import type { User } from '../../../types/user.typte'
-
-// import AddUserPopup from '../../../components/AdminComponents/AddUserPopup' // Placeholder
-// import EditUserPopup from '../../../components/AdminComponents/EditUserPopup' // Placeholder
+import AddUserPopup from '../../../components/AdminComponents/AddUserPopup'
+import EditUserPopup from '../../../components/AdminComponents/EditUserPopup'
+import Swal from 'sweetalert2'
 
 // Định nghĩa kiểu dữ liệu cho form lọc
 type FilterFormData = {
@@ -18,12 +18,9 @@ type FilterFormData = {
 }
 
 export default function ListUser() {
-  //   const queryClient = useQueryClient()
-
-  // --- State & Form Hook ---
-
   const [page, setPage] = useState(1)
   const size = 5 // số item / trang
+  const queryClient = useQueryClient()
 
   const { register, handleSubmit, reset } = useForm<FilterFormData>()
 
@@ -33,9 +30,9 @@ export default function ListUser() {
   const [phoneNumberFilter, setPhoneNumberFilter] = useState('')
 
   // State cho việc mở modal (giữ nguyên cấu trúc)
-  // const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  // const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  // const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
 
   // --- React Query ---
 
@@ -50,45 +47,45 @@ export default function ListUser() {
   const users: User[] = data?.data.result.elements || []
 
   // Call API Delete User
-  //   const { mutate: deleteUserById } = useMutation({
-  //     mutationFn: (id: string) => deleteUser(id),
-  //     onSuccess: () => {
-  //       queryClient.invalidateQueries({ queryKey: ['users'] })
-  //       Swal.fire({
-  //         toast: true,
-  //         position: 'top-end',
-  //         icon: 'success',
-  //         title: 'Xóa người dùng thành công!',
-  //         showConfirmButton: false,
-  //         timer: 3000,
-  //         timerProgressBar: true
-  //       })
-  //     },
-  //     onError: (error) => {
-  //       console.error('Lỗi khi xóa người dùng:', error)
-  //       Swal.fire('❌ Xóa thất bại', 'Đã xảy ra lỗi khi xóa người dùng.', 'error')
-  //     }
-  //   })
+  const { mutate: deleteUserById } = useMutation({
+    mutationFn: (id: string) => deleteOneUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] })
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Xóa người dùng thành công!',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      })
+    },
+    onError: (error) => {
+      console.error('Lỗi khi xóa người dùng:', error)
+      Swal.fire('❌ Xóa thất bại', 'Đã xảy ra lỗi khi xóa người dùng.', 'error')
+    }
+  })
 
   // --- Handlers ---
 
   // Hàm handleDelete với SweetAlert
-  //   const handleDelete = (id: string) => {
-  //     Swal.fire({
-  //       title: 'Bạn có chắc chắn?',
-  //       text: 'Bạn sẽ không thể khôi phục sau khi xóa!',
-  //       icon: 'warning',
-  //       showCancelButton: true,
-  //       confirmButtonColor: '#3085d6',
-  //       cancelButtonColor: '#d33',
-  //       confirmButtonText: 'Xóa!',
-  //       cancelButtonText: 'Hủy'
-  //     }).then((result) => {
-  //       if (result.isConfirmed) {
-  //         deleteUserById(id)
-  //       }
-  //     })
-  //   }
+  const handleDelete = (id: string) => {
+    Swal.fire({
+      title: 'Bạn có chắc chắn?',
+      text: 'Bạn sẽ không thể khôi phục sau khi xóa!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Xóa!',
+      cancelButtonText: 'Hủy'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteUserById(id)
+      }
+    })
+  }
 
   // Hàm được gọi khi submit form lọc
   const onSubmit = (formData: FilterFormData) => {
@@ -115,7 +112,7 @@ export default function ListUser() {
         <h1 className='text-2xl font-semibold text-gray-800'>👤 Danh sách người dùng</h1>
 
         <button
-          //   onClick={() => setIsAddModalOpen(true)}
+          onClick={() => setIsAddModalOpen(true)}
           className='flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition shadow-sm'
         >
           <Plus size={18} />
@@ -172,6 +169,8 @@ export default function ListUser() {
               <th className='px-4 py-2'>Mã số sinh viên</th>
               <th className='px-4 py-2'>Số điện thoại</th>
               <th className='px-4 py-2'>Email</th>
+              <th className='px-4 py-2'>Trạng thái</th>
+              <th className='px-4 py-2'>Chức Vụ</th>
               <th className='px-4 py-2 text-center'>Hành động</th>
             </tr>
           </thead>
@@ -203,20 +202,29 @@ export default function ListUser() {
                   <td className='px-4 py-3'>{user.studentCode}</td>
                   <td className='px-4 py-3'>{user.phoneNumber}</td>
                   <td className='px-4 py-3'>{user.email}</td>
+                  <td className='px-4 py-3'>
+                    {user.status === 'ACTIVE' ? (
+                      <span className='text-green-600 font-semibold'>Còn hoạt động</span>
+                    ) : (
+                      <span className='text-red-600 font-semibold'>Không hoạt động</span>
+                    )}
+                  </td>
+                  <td className='px-4 py-3'> {user.roles.length > 0 ? user.roles[0].name : 'No Role'}</td>
+
                   <td className='px-4 py-3 text-center rounded-r-xl'>
                     <div className='flex justify-center gap-3'>
                       <button
-                        // onClick={() => {
-                        //   setSelectedUserId(user.id)
-                        //   setIsEditModalOpen(true)
-                        // }}
+                        onClick={() => {
+                          setSelectedUserId(user.id)
+                          setIsEditModalOpen(true)
+                        }}
                         className='text-blue-500 hover:text-blue-700 transition'
                         title='Chỉnh sửa'
                       >
                         <Pencil size={18} />
                       </button>
                       <button
-                        // onClick={() => handleDelete(user.id)}
+                        onClick={() => handleDelete(user.id)}
                         className='text-red-500 hover:text-red-700 transition'
                         title='Xóa'
                       >
@@ -241,7 +249,7 @@ export default function ListUser() {
       </div>
 
       {/* Placeholder for Popups - Bạn sẽ cần tạo các component này */}
-      {/* <AddUserPopup isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
+      <AddUserPopup isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
       <EditUserPopup
         isOpen={isEditModalOpen}
         userId={selectedUserId}
@@ -249,7 +257,7 @@ export default function ListUser() {
           setIsEditModalOpen(false)
           setSelectedUserId(null)
         }}
-      /> */}
+      />
     </div>
   )
 }

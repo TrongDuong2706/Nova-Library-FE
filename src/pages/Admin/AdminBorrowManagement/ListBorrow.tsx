@@ -1,12 +1,13 @@
-import  { useState } from 'react'
+import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Pagination from '../../../components/Pagination/Pagination'
-import { getBorrowWithFilter, returnBook } from '../../../apis/borrow.api'
+import { bookRenewal, getBorrowWithFilter, returnBook } from '../../../apis/borrow.api'
 import type { Borrow } from '../../../types/borrow.type'
 import { Eye } from 'lucide-react'
 import BorrowDetailPopup from '../../../components/AdminComponents/BorrowDetail'
 import Swal from 'sweetalert2'
 import { useForm } from 'react-hook-form'
+import dayjs from 'dayjs'
 
 type FilterFormData = {
   id: string
@@ -74,21 +75,72 @@ export default function ListBorrow() {
     setFilterBorrowDate(null)
   }
 
+  //Gia hạn
+  const renewalMutation = useMutation({
+    mutationFn: ({ borrowId, newDueDate }: { borrowId: string; newDueDate: string }) =>
+      bookRenewal(borrowId, { newDueDate }),
+    onSuccess: () => {
+      Swal.fire({
+        icon: 'success',
+        title: 'Gia hạn thành công!',
+        timer: 2000,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end'
+      })
+      queryClient.invalidateQueries({ queryKey: ['borrows'] })
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      const message = error?.response?.data?.message || 'Có lỗi khi gia hạn. Vui lòng thử lại.'
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi khi gia hạn!',
+        text: message
+      })
+    }
+  })
+
   return (
     <div className='bg-white rounded-2xl shadow-md p-6'>
       <div className='flex items-center justify-between mb-6'>
         <h1 className='text-2xl font-semibold text-gray-800'>📄 Danh sách lượt mượn sách</h1>
       </div>
       {/* --- START: Giao diện bộ lọc --- */}
-      <form onSubmit={handleSubmit(onSubmit)} className='grid grid-cols-1 md:grid-cols-4 gap-4 mb-4'>
-        <input {...register('id')} type='text' placeholder='Mã đơn' className='border px-3 py-2 rounded' />
-        <input {...register('name')} type='text' placeholder='Tên người mượn' className='border px-3 py-2 rounded' />
-        <input {...register('borrowDate')} type='date' className='border px-3 py-2 rounded' />
+      <form onSubmit={handleSubmit(onSubmit)} className='grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 items-end'>
+        {/* Mã đơn */}
+        <div className='flex flex-col'>
+          <label className='text-sm font-medium text-gray-700 mb-1'>Mã đơn</label>
+          <input {...register('id')} type='text' className='border px-3 py-2 rounded' placeholder='Nhập mã đơn' />
+        </div>
+
+        {/* Tên người mượn */}
+        <div className='flex flex-col'>
+          <label className='text-sm font-medium text-gray-700 mb-1'>Tên người mượn</label>
+          <input
+            {...register('name')}
+            type='text'
+            className='border px-3 py-2 rounded'
+            placeholder='Nhập tên người mượn'
+          />
+        </div>
+
+        {/* Ngày mượn */}
+        <div className='flex flex-col'>
+          <label className='text-sm font-medium text-gray-700 mb-1'>Ngày mượn</label>
+          <input {...register('borrowDate')} type='date' className='border px-3 py-2 rounded' />
+        </div>
+
+        {/* Nút */}
         <div className='flex gap-2'>
-          <button type='submit' className='bg-blue-600 text-white rounded px-4 py-2'>
+          <button type='submit' className='bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-700 transition'>
             Lọc
           </button>
-          <button type='button' onClick={handleClear} className='bg-gray-300 text-black rounded px-4 py-2'>
+          <button
+            type='button'
+            onClick={handleClear}
+            className='bg-gray-300 text-black rounded px-4 py-2 hover:bg-gray-400 transition'
+          >
             Xóa
           </button>
         </div>
@@ -133,9 +185,13 @@ export default function ListBorrow() {
               borrows.map((borrow) => (
                 <tr key={borrow.id} className='bg-gray-50 hover:bg-gray-100 rounded-xl transition'>
                   <td className='px-4 py-3 rounded-l-xl'>{borrow.id}</td>
-                  <td className='px-4 py-3'>{borrow.borrowDate}</td>
-                  <td className='px-4 py-3'>{borrow.dueDate}</td>
-                  <td className='px-4 py-3'>{borrow.returnDate || 'Chưa trả'}</td>
+                  <td className='px-4 py-3'>
+                    {borrow.borrowDate ? dayjs(borrow.borrowDate).format('DD-MM-YYYY') : ''}
+                  </td>
+                  <td className='px-4 py-3'>{borrow.dueDate ? dayjs(borrow.dueDate).format('DD-MM-YYYY') : ''}</td>
+                  <td className='px-4 py-3'>
+                    {borrow.returnDate ? dayjs(borrow.returnDate).format('DD-MM-YYYY') : 'Chưa trả'}
+                  </td>
                   <td className='px-4 py-3'>{borrow.finalAmount.toLocaleString()} đ</td>
                   <td className='px-4 py-3'>
                     {borrow.status === 'BORROWED'
@@ -176,7 +232,7 @@ export default function ListBorrow() {
                             }
                           })
                         }}
-                        disabled={borrow.status === 'Returned'}
+                        disabled={borrow.status === 'RETURNED'}
                         className={`px-3 py-1 text-sm rounded-lg transition ${
                           borrow.status === 'Returned'
                             ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
@@ -184,6 +240,36 @@ export default function ListBorrow() {
                         }`}
                       >
                         Trả sách
+                      </button>
+                      <button
+                        onClick={() => {
+                          Swal.fire({
+                            title: 'Nhập hạn mới',
+                            input: 'date',
+                            inputLabel: 'Ngày hạn trả mới',
+                            inputAttributes: {
+                              min: borrow.dueDate // không cho nhập trước hạn cũ
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: 'Gia hạn',
+                            cancelButtonText: 'Hủy'
+                          }).then((result) => {
+                            if (result.isConfirmed && result.value) {
+                              renewalMutation.mutate({
+                                borrowId: borrow.id,
+                                newDueDate: result.value
+                              })
+                            }
+                          })
+                        }}
+                        disabled={borrow.status === 'RETURNED'}
+                        className={`px-3 py-1 text-sm rounded-lg transition ${
+                          borrow.status === 'RETURNED'
+                            ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                            : 'bg-purple-600 text-white hover:bg-purple-700'
+                        }`}
+                      >
+                        Gia hạn
                       </button>
                     </div>
                   </td>
