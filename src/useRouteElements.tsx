@@ -1,4 +1,4 @@
-import { useRoutes } from 'react-router-dom'
+import { Navigate, Outlet, useRoutes } from 'react-router-dom'
 import Login from './pages/Login/Login'
 import Register from './pages/Register/Register'
 // import { useContext } from 'react'
@@ -15,21 +15,30 @@ import BookDetail from './pages/BookDetail/BookDetail'
 import MyBorrow from './pages/MyBorrow/MyBorrow'
 import FavoritePage from './pages/FavouritePage/FavoritePage'
 import ListUser from './pages/Admin/AdminUserManagement/ListUser'
+import { useContext } from 'react'
+import { AppContext } from './contexts/app.context'
+import { isAdmin } from './utils/util'
 
 export default function useRouteElements() {
-  // function ProtectedRoute() {
-  //   const { isAuthenticated } = useContext(AppContext)
-  //   return isAuthenticated ? <Outlet /> : <Navigate to='/login' />
-  // }
+  function RejectedRoute() {
+    const { isAuthenticated } = useContext(AppContext)
 
-  // function RejectedRoute() {
-  //   const { isAuthenticated } = useContext(AppContext)
-  //   return !isAuthenticated ? <Outlet /> : <Navigate to='/' />
-  // }
+    if (!isAuthenticated) {
+      return <Outlet />
+    }
+
+    // Nếu đã đăng nhập → check role
+    if (isAdmin()) {
+      return <Navigate to='/admin' />
+    }
+
+    return <Navigate to='/' />
+  }
+
   const routeElements = useRoutes([
     {
       path: '',
-      // element: <RejectedRoute />,
+      element: <RejectedRoute />,
       children: [
         {
           path: '/register',

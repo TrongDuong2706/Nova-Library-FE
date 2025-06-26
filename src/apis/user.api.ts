@@ -16,7 +16,7 @@ export const updateUser = (
   userId: string,
   body: {
     firstName: string
-    password: string
+    password?: string
     lastName: string
     email: string
     phoneNumber: string

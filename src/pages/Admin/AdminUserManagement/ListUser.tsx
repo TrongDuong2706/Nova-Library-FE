@@ -9,6 +9,7 @@ import type { User } from '../../../types/user.typte'
 import AddUserPopup from '../../../components/AdminComponents/AddUserPopup'
 import EditUserPopup from '../../../components/AdminComponents/EditUserPopup'
 import Swal from 'sweetalert2'
+import ListBorrowByUser from '../../../components/AdminComponents/ListBorrowByUser'
 
 // Định nghĩa kiểu dữ liệu cho form lọc
 type FilterFormData = {
@@ -33,6 +34,9 @@ export default function ListUser() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+
+  const [isBorrowModalOpen, setIsBorrowModalOpen] = useState(false)
+  const [borrowUserId, setBorrowUserId] = useState<string | null>(null)
 
   // --- React Query ---
 
@@ -230,6 +234,16 @@ export default function ListUser() {
                       >
                         <Trash2 size={18} />
                       </button>
+                      <button
+                        onClick={() => {
+                          setBorrowUserId(user.id)
+                          setIsBorrowModalOpen(true)
+                        }}
+                        className='text-purple-500 hover:text-purple-700 transition'
+                        title='Xem sách đã mượn'
+                      >
+                        📖
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -256,6 +270,14 @@ export default function ListUser() {
         onClose={() => {
           setIsEditModalOpen(false)
           setSelectedUserId(null)
+        }}
+      />
+      <ListBorrowByUser
+        isOpen={isBorrowModalOpen}
+        userId={borrowUserId}
+        onClose={() => {
+          setIsBorrowModalOpen(false)
+          setBorrowUserId(null)
         }}
       />
     </div>

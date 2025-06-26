@@ -58,11 +58,18 @@ export default function AddBookPopup({ isOpen, onClose }: AddBookPopupProps) {
       reset()
       onClose()
     },
-    onError: () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra!'
+
       Swal.fire({
+        toast: true,
+        position: 'top-end',
         icon: 'error',
-        title: 'Thêm sách thất bại!',
-        text: 'Vui lòng kiểm tra lại thông tin hoặc thử lại sau.'
+        title: errorMessage,
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
       })
     }
   })

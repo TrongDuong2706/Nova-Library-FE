@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Swal from 'sweetalert2'
@@ -90,6 +90,7 @@ export default function EditUserPopup({ isOpen, onClose, userId }: EditUserPopup
       queryClient.invalidateQueries({ queryKey: ['users'] }) // 🔁 Refetch danh sách users
       onClose()
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật.'
       Swal.fire({
@@ -100,7 +101,7 @@ export default function EditUserPopup({ isOpen, onClose, userId }: EditUserPopup
     }
   })
 
-  // 4. Hàm xử lý khi submit form
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onSubmit = (formData: any) => {
     if (!userId) return
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -171,12 +172,14 @@ export default function EditUserPopup({ isOpen, onClose, userId }: EditUserPopup
           {/* Role Name - Có thể cải tiến thành dropdown */}
           <div>
             <label className='text-sm font-medium text-gray-700'>Vai trò (Role)</label>
-            <input
-              type='text'
+            <select
               {...register('roleName', { required: 'Vai trò là bắt buộc' })}
               className='w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500'
-              placeholder='VD: User, Admin'
-            />
+            >
+              <option value=''>-- Chọn vai trò --</option>
+              <option value='ADMIN'>ADMIN</option>
+              <option value='USER'>USER</option>
+            </select>
             {errors.roleName && <p className='text-red-500 text-sm mt-1'>{errors.roleName.message}</p>}
           </div>
 

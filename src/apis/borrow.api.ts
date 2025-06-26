@@ -33,3 +33,6 @@ export const bookRenewal = (borrowId: string, body: { newDueDate: string }) =>
 
 export const getAllOverdueBorrow = (page: number, size: number) =>
   http.get<BorrowsResponse>('/borrowings/getOverDueStatus', { params: { page, size } })
+
+export const getAllBorrowByUserId = (userId: string, page: number, size: number) =>
+  http.get<BorrowsResponse>(`/borrowings/getAllBorrowWithUser/${userId}`, { params: { page, size } })

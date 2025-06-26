@@ -1,16 +1,19 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { BookOpen, ChevronLeft, AlertCircle, CheckCircle, Clock, Hourglass } from 'lucide-react'
+import { BookOpen, ChevronLeft, AlertCircle, CheckCircle, Clock, Eye } from 'lucide-react'
 import { getMyBorrows } from '../../apis/borrow.api' // Đường dẫn đổi theo dự án của bạn
 import Pagination from '../../components/Pagination/Pagination'
 import { Link } from 'react-router-dom'
+import MyBorrowDetail from '../../components/MyBorrowDetail/MyBorrowDetail'
 
 export default function MyBorrow() {
   const [page, setPage] = useState(1)
   const size = 5
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
+  const [selectedBorrowId, setSelectedBorrowId] = useState<string | null>(null)
   const { data, isLoading } = useQuery({
     queryKey: ['myBorrows', page],
-    queryFn: () => getMyBorrows(page, size) // Ví dụ page = 1, size = 100
+    queryFn: () => getMyBorrows(page, size)
   })
 
   const statusConfig = {
@@ -24,15 +27,10 @@ export default function MyBorrow() {
       icon: <CheckCircle className='h-4 w-4' />,
       classes: 'bg-green-500/10 text-green-400 border-green-500/20'
     },
-    'Quá hạn': {
-      text: 'Đã trả',
+    OVERDUE: {
+      text: 'Quá hạn',
       icon: <AlertCircle className='h-4 w-4' />,
       classes: 'bg-red-500/10 text-red-400 border-red-500/20'
-    },
-    'Đang chờ duyệt': {
-      text: 'Đã trả',
-      icon: <Hourglass className='h-4 w-4' />,
-      classes: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
     }
   }
 
@@ -75,7 +73,7 @@ export default function MyBorrow() {
                     <th className='px-6 py-4 font-semibold tracking-wider'>Ngày trả</th>
                     <th className='px-6 py-4 font-semibold tracking-wider'>Tiền phạt</th>
                     <th className='px-6 py-4 font-semibold tracking-wider'>Trạng thái</th>
-                    {/* <th className='px-6 py-4 font-semibold tracking-wider text-center'>Hành động</th> */}
+                    <th className='px-6 py-4 font-semibold tracking-wider text-center'>Hành động</th>
                   </tr>
                 </thead>
 
@@ -119,9 +117,15 @@ export default function MyBorrow() {
                             {config.text}
                           </span>
                         </td>
-                        {/* <td className='px-6 py-4 text-center'>
-                          <Eye className='h-5 w-5 text-slate-300 hover:text-teal-400 cursor-pointer' />
-                        </td> */}
+                        <td className='px-6 py-4 text-center'>
+                          <Eye
+                            onClick={() => {
+                              setSelectedBorrowId(borrow.id)
+                              setIsDetailOpen(true)
+                            }}
+                            className='ml-10 h-5 w-5 text-slate-300 hover:text-teal-400 cursor-pointer'
+                          />
+                        </td>
                       </tr>
                     )
                   })}
@@ -138,6 +142,14 @@ export default function MyBorrow() {
           />
         </div>
       </main>
+      <MyBorrowDetail
+        isOpen={isDetailOpen}
+        borrowId={selectedBorrowId}
+        onClose={() => {
+          setIsDetailOpen(false)
+          setSelectedBorrowId(null)
+        }}
+      />
     </div>
   )
 }

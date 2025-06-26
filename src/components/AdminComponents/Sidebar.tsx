@@ -8,19 +8,19 @@ export default function Sidebar() {
       </Link>
       <nav className='flex flex-col gap-2 text-[14px]'>
         <Link className='hover:bg-purple-600 px-3 py-2 rounded-md' to='/admin/genres'>
-          📂 Genres
+          📂 Thể Loại
         </Link>
         <Link className='hover:bg-purple-600 px-3 py-2 rounded-md' to='/admin/authors'>
-          ✍️ Authors
+          ✍️ Tác Giả
         </Link>
         <Link className='hover:bg-purple-600 px-3 py-2 rounded-md' to='/admin/books'>
-          📘 Books
+          📘 Sách
         </Link>
         <Link className='hover:bg-purple-600 px-3 py-2 rounded-md' to='/admin/borrows'>
-          📄 Borrowing Orders
+          📄 Đơn Mượn
         </Link>
         <Link className='hover:bg-purple-600 px-3 py-2 rounded-md' to='/admin/users'>
-          👤 Users
+          👤 Người Dùng
         </Link>
       </nav>
     </aside>

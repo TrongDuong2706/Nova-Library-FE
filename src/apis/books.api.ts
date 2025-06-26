@@ -50,3 +50,6 @@ export const countBook = () => http.get('/books/countBook')
 
 export const getAllBookZeroStock = (page: number, size: number) =>
   http.get<BookResponse>('/books/getAllBookZeroStock', { params: { page, size } })
+
+export const getAllBookWithGenre = (genreName: string, page: number, size: number) =>
+  http.get<BookResponse>('/books/getBookWithGenre', { params: { genreName, page, size } })

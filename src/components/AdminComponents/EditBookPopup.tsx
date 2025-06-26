@@ -79,6 +79,20 @@ export default function EditBookPopup({ isOpen, onClose, bookId }: EditBookPopup
       })
       queryClient.invalidateQueries({ queryKey: ['books'] })
       onClose()
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra!'
+
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'error',
+        title: errorMessage,
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      })
     }
   })
 

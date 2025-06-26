@@ -42,7 +42,6 @@ export default function EditGenrePopup({ isOpen, onClose, genreId }: EditGenrePo
   const { mutate, isPending } = useMutation({
     mutationFn: (formData: GenreFormData) => updateGenre(genreId!, formData.name, formData.description),
     onSuccess: () => {
-      //toast.success('✅ Cập nhật thể loại thành công')
       Swal.fire({
         toast: true,
         position: 'top-end', // có thể là 'top-end', 'bottom-end', 'top-start',...
@@ -56,9 +55,7 @@ export default function EditGenrePopup({ isOpen, onClose, genreId }: EditGenrePo
 
       onClose()
     },
-    onError: () => {
-      // toast.error('❌ Cập nhật thất bại, vui lòng thử lại!')
-    }
+    onError: () => {}
   })
 
   const onSubmit = (formData: GenreFormData) => {

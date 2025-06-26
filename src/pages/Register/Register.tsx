@@ -34,11 +34,14 @@ export default function Register() {
       onError: (error: any) => {
         if (error.response?.data) {
           const { message, field } = error.response.data
+
           if (field === 'username' || message.includes('Username already exists')) {
-            setError('username', { type: 'manual', message: message })
+            setError('username', { type: 'manual', message })
+          } else if (field === 'password' || message.includes('Password')) {
+            setError('password', { type: 'manual', message })
           } else {
-            // fallback lỗi khác nếu cần
-            setError('username', { type: 'manual', message: message })
+            // fallback: nếu không xác định được field, vẫn gán vào password như bạn yêu cầu
+            setError('password', { type: 'manual', message })
           }
         }
       }
