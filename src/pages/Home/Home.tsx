@@ -14,7 +14,7 @@ import { addFavorite } from '../../apis/favorite.api'
 import Swal from 'sweetalert2'
 import { AppContext } from '../../contexts/app.context'
 import { getMyInfor, logout } from '../../apis/auth.api'
-import { getAccessTokenFromLS } from '../../utils/auth'
+import { clearAccessTokenFromLS, getAccessTokenFromLS } from '../../utils/auth'
 
 type FormData = {
   authorName: string
@@ -148,12 +148,15 @@ export default function Home() {
       })
     },
     onError: () => {
-      Swal.fire({
-        icon: 'error',
-        title: 'Lỗi khi đăng xuất',
-        text: 'Vui lòng thử lại.',
-        confirmButtonText: 'Đóng'
-      })
+      // Swal.fire({
+      //   icon: 'error',
+      //   title: 'Lỗi khi đăng xuất',
+      //   text: 'Vui lòng thử lại.',
+      //   confirmButtonText: 'Đóng'
+      // })
+      setIsAuthenticated(false)
+      clearAccessTokenFromLS()
+      navigate('/login')
     }
   })
 
