@@ -1,4 +1,4 @@
-import axios, { AxiosError, HttpStatusCode, type AxiosInstance } from 'axios'
+import axios, { type AxiosInstance } from 'axios'
 import type { LoginResponse } from '../types/auth.type'
 import { clearAccessTokenFromLS, getAccessTokenFromLS, saveAccessTokenToLS } from './auth'
 
@@ -26,32 +26,22 @@ class Http {
         return Promise.reject(error)
       }
     )
-    this.instance.interceptors.response.use(
-      (response) => {
-        const { url } = response.config
-        if (url === '/auth') {
-          const token = (response.data as LoginResponse).result.token
-          if (token) {
-            this.setAccessToken('Bearer ' + token)
-          } else {
-            console.error('Token không tồn tại trong response')
-          }
-        } else if (url === '/auth/logout') {
-          this.accessToken = ''
-          clearAccessTokenFromLS()
+    this.instance.interceptors.response.use((response) => {
+      const { url } = response.config
+      if (url === '/auth') {
+        const token = (response.data as LoginResponse).result.token
+        if (token) {
+          this.setAccessToken('Bearer ' + token)
+        } else {
+          console.error('Token không tồn tại trong response')
         }
-
-        return response
-      },
-      (error: AxiosError) => {
-        if (error.response?.status !== HttpStatusCode.UnprocessableEntity) {
-          // const data: any | undefined = error.response?.data;
-          // const message = data?.message || error.message;
-          //toast.error(message)
-        }
-        return Promise.reject(error)
+      } else if (url === '/auth/logout') {
+        this.accessToken = ''
+        clearAccessTokenFromLS()
       }
-    )
+
+      return response
+    })
   }
 
   // Phương thức để cập nhật token

@@ -4,6 +4,9 @@ import http from '../utils/http'
 export const getAuthors = (page: number, size: number) =>
   http.get<AuthorResponse>('/author', { params: { page, size } })
 
+export const getAuthorsByName = (keyword: string, page: number, size: number) =>
+  http.get<AuthorResponse>('/author/findByName', { params: { keyword, page, size } })
+
 export const createAuthor = (name: string, bio: string) =>
   http.post<AuthorOneResponse>('/author', {
     name,

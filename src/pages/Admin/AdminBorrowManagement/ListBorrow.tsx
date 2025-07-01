@@ -3,11 +3,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Pagination from '../../../components/Pagination/Pagination'
 import { bookRenewal, getBorrowWithFilter, returnBook } from '../../../apis/borrow.api'
 import type { Borrow } from '../../../types/borrow.type'
-import { Eye } from 'lucide-react'
+import { Eye, Plus } from 'lucide-react'
 import BorrowDetailPopup from '../../../components/AdminComponents/BorrowDetail'
 import Swal from 'sweetalert2'
 import { useForm } from 'react-hook-form'
 import dayjs from 'dayjs'
+import { Link } from 'react-router-dom'
 
 type FilterFormData = {
   id: string
@@ -105,6 +106,13 @@ export default function ListBorrow() {
     <div className='bg-white rounded-2xl shadow-md p-6'>
       <div className='flex items-center justify-between mb-6'>
         <h1 className='text-2xl font-semibold text-gray-800'>📄 Danh sách lượt mượn sách</h1>
+        <Link
+          to='/admin/borrows/create' // Đổi đường dẫn này nếu bạn muốn khác
+          className='flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition shadow-sm'
+        >
+          <Plus size={18} />
+          <span className='text-sm font-medium'>Tạo đơn mượn</span>
+        </Link>
       </div>
       {/* --- START: Giao diện bộ lọc --- */}
       <form onSubmit={handleSubmit(onSubmit)} className='grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 items-end'>

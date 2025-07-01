@@ -11,13 +11,15 @@ import EditBookPopup from '../../../components/AdminComponents/EditBookPopup'
 import type { Book } from '../../../types/book.type'
 import { getBooksWithAdminFilter, softDeleteBook } from '../../../apis/books.api'
 import { getGenres } from '../../../apis/genre.api'
+import { Link } from 'react-router-dom'
 
 // Định nghĩa kiểu dữ liệu cho form lọc
 type FilterFormData = {
-  title: string
+  keyword: string
   authorName: string
   genreName: string
   status: string // Form value luôn là string
+  isbn: string
 }
 
 export default function ListBook() {
@@ -30,15 +32,16 @@ export default function ListBook() {
   const { register, handleSubmit, reset } = useForm<FilterFormData>()
 
   // State thực tế dùng để trigger query, các giá trị này lấy từ form
-  const [filterTitle, setFilterTitle] = useState('')
+  const [filterKeyword, setFilterKeyword] = useState('')
   const [filterAuthorName, setFilterAuthorName] = useState('')
   const [filterGenreName, setFilterGenreName] = useState('')
   const [filterStatus, setFilterStatus] = useState('') // Giữ là string để khớp với form
+  const [filterIsbn, setFilterIsbn] = useState('')
 
   const queryClient = useQueryClient()
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['books', { filterTitle, filterAuthorName, filterGenreName, filterStatus, page }],
+    queryKey: ['books', { filterKeyword, filterAuthorName, filterGenreName, filterStatus, filterIsbn, page }],
     queryFn: () => {
       // ===== ĐÂY LÀ PHẦN SỬA ĐỔI QUAN TRỌNG =====
       // Chuyển đổi status từ string sang number | null trước khi gọi API
@@ -46,10 +49,11 @@ export default function ListBook() {
 
       // Gọi API với các tham số đúng thứ tự và đúng kiểu dữ liệu
       return getBooksWithAdminFilter(
-        filterAuthorName, // tham số đầu tiên
-        filterGenreName, // tham số thứ hai
-        filterTitle, // tham số thứ ba
-        numericStatus, // tham số thứ tư (đã chuyển đổi)
+        filterAuthorName,
+        filterGenreName,
+        filterKeyword,
+        numericStatus,
+        filterIsbn, // ✅ đúng vị trí
         page,
         size
       )
@@ -102,16 +106,18 @@ export default function ListBook() {
 
   const onSubmit = (formData: FilterFormData) => {
     setPage(1)
-    setFilterTitle(formData.title || '')
+    setFilterKeyword(formData.keyword || '')
     setFilterAuthorName(formData.authorName || '')
     setFilterGenreName(formData.genreName || '')
     setFilterStatus(formData.status || '') // Cập nhật state string
+    setFilterIsbn(formData.isbn || '')
   }
 
   const handleClearFilter = () => {
-    reset({ title: '', authorName: '', genreName: '', status: '' })
+    reset({ keyword: '', authorName: '', genreName: '', status: '', isbn: '' })
+    setFilterIsbn('')
     setPage(1)
-    setFilterTitle('')
+    setFilterKeyword('')
     setFilterAuthorName('')
     setFilterGenreName('')
     setFilterStatus('')
@@ -121,69 +127,101 @@ export default function ListBook() {
     <div className='bg-white rounded-2xl shadow-md p-6'>
       <div className='flex items-center justify-between mb-4'>
         <h1 className='text-2xl font-semibold text-gray-800'>📚 Danh sách sách</h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
+        <Link
+          to='/admin/books/create' // Điều hướng đến trang thêm sách mới
           className='flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition shadow-sm'
         >
           <Plus size={18} />
           <span className='text-sm font-medium'>Thêm sách</span>
-        </button>
+        </Link>
       </div>
 
       {/* ===== KHU VỰC BỘ LỌC ===== */}
-      <form onSubmit={handleSubmit(onSubmit)} className='mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200'>
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3'>
-          <input
-            {...register('title')}
-            type='text'
-            placeholder='🔍 Tiêu đề'
-            className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500'
-          />
-          <input
-            {...register('authorName')}
-            type='text'
-            placeholder='✍️ Tác giả'
-            className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500'
-          />
-          <select
-            {...register('genreName')}
-            className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500'
-          >
-            <option value=''>🎭 Tất cả thể loại</option>
-            {/* API getBooksWithAdminFilter nhận vào genreName nên value là genre.name */}
-            {genres.map((genre) => (
-              <option key={genre.id} value={genre.name}>
-                {genre.name}
-              </option>
-            ))}
-          </select>
-          <select
-            {...register('status')}
-            className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500'
-          >
-            <option value=''>⚡ Tất cả tình trạng</option>
-            <option value='1'>Còn phục vụ</option>
-            <option value='0'>Ngưng phục vụ</option>
-          </select>
-        </div>
+      <form onSubmit={handleSubmit(onSubmit)} className='mb-4'>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4'>
+          {/* Tiêu đề */}
+          {/* Từ khóa */}
+          <div>
+            <label className='block text-xs text-gray-600 mb-1'>Từ khóa</label>
+            <input
+              {...register('keyword')}
+              type='text'
+              placeholder='Nhập tiêu đề hoặc mô tả'
+              className='w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
+            />
+          </div>
 
-        <div className='mt-3 flex justify-end gap-2'>
-          <button
-            type='submit'
-            className='flex items-center gap-1 px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm shadow-sm transition'
-          >
-            <Search size={16} />
-            Lọc
-          </button>
-          <button
-            type='button'
-            onClick={handleClearFilter}
-            className='flex items-center gap-1 px-3 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 text-sm shadow-sm transition'
-          >
-            🧹 Xóa lọc
-          </button>
+          {/* Tác giả */}
+          <div>
+            <label className='block text-xs text-gray-600 mb-1'>Tác giả</label>
+            <input
+              {...register('authorName')}
+              type='text'
+              placeholder='Nhập tên tác giả'
+              className='w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
+            />
+          </div>
+
+          {/* ISBN */}
+          <div>
+            <label className='block text-xs text-gray-600 mb-1'>ISBN</label>
+            <input
+              {...register('isbn')}
+              type='text'
+              placeholder='Nhập mã ISBN'
+              className='w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
+            />
+          </div>
+
+          {/* Thể loại */}
+          <div>
+            <label className='block text-xs text-gray-600 mb-1'>Thể loại</label>
+            <select
+              {...register('genreName')}
+              className='w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
+            >
+              <option value=''>-- Chọn thể loại --</option>
+              {genres.map((genre) => (
+                <option key={genre.id} value={genre.name}>
+                  {genre.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Trạng thái */}
+          <div>
+            <label className='block text-xs text-gray-600 mb-1'>Tình trạng</label>
+            <select
+              {...register('status')}
+              className='w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500'
+            >
+              <option value=''>-- Chọn tình trạng --</option>
+              <option value='1'>Còn phục vụ</option>
+              <option value='0'>Ngưng phục vụ</option>
+            </select>
+          </div>
+
+          {/* Button group */}
+          <div className='flex items-end justify-start gap-2'>
+            <button
+              type='submit'
+              className='flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition'
+            >
+              <Search size={16} />
+              Lọc
+            </button>
+            <button
+              type='button'
+              onClick={handleClearFilter}
+              className='flex items-center gap-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-md text-sm hover:bg-gray-300 transition'
+            >
+              🧹 Xóa lọc
+            </button>
+          </div>
         </div>
       </form>
+
       {/* ===== KẾT THÚC BỘ LỌC ===== */}
 
       <div className='overflow-x-auto'>
@@ -251,16 +289,13 @@ export default function ListBook() {
                   </td>
                   <td className='px-4 py-3 text-center rounded-r-xl'>
                     <div className='flex justify-center gap-3'>
-                      <button
-                        onClick={() => {
-                          setSelectedBookId(book.id)
-                          setIsEditModalOpen(true)
-                        }}
+                      <Link
+                        to={`/admin/books/edit/${book.id}`} // URL động với bookId
                         className='text-blue-500 hover:text-blue-700 transition'
                         title='Chỉnh sửa'
                       >
                         <Pencil size={18} />
-                      </button>
+                      </Link>
                       <button
                         onClick={() => handleDelete(book.id)}
                         className='text-red-500 hover:text-red-700 transition'

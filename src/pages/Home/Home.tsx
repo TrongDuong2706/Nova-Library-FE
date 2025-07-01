@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react'
 // ========== START: THÊM ICON HEART ==========
-import { BookOpen, User, FileText, Search, ClipboardList, Heart } from 'lucide-react'
+import { BookOpen, User, Search, ClipboardList, Heart } from 'lucide-react'
 // ========== END: THÊM ICON HEART ==========
 import Pagination from '../../components/Pagination/Pagination'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -19,8 +19,7 @@ import { clearAccessTokenFromLS, getAccessTokenFromLS } from '../../utils/auth'
 type FormData = {
   authorName: string
   genreName: string
-  title: string
-  description: string
+  keyword: string
 }
 
 export default function Home() {
@@ -32,8 +31,7 @@ export default function Home() {
     defaultValues: {
       authorName: '',
       genreName: '',
-      title: '',
-      description: ''
+      keyword: ''
     }
   })
 
@@ -42,13 +40,12 @@ export default function Home() {
 
   const [authorName, setAuthorName] = useState<string | null>(null)
   const [genreName, setGenreName] = useState<string | null>(null)
-  const [title, setTitle] = useState<string | null>(null)
-  const [description, setDescription] = useState<string | null>(null)
+  const [keyword, setKeyword] = useState<string | null>(null)
   const [activeCategory, setActiveCategory] = useState<string>('Tất cả')
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['books', page, authorName, genreName, title, description],
-    queryFn: () => getBooksWithFilter(authorName, genreName, title, description, page, size)
+    queryKey: ['books', page, authorName, genreName, keyword],
+    queryFn: () => getBooksWithFilter(authorName, genreName, keyword, page, size)
   })
 
   const books: Book[] = data?.data.result.elements || []
@@ -71,8 +68,7 @@ export default function Home() {
   const handleSearch = (formData: FormData) => {
     setPage(1)
     setAuthorName(formData.authorName || null)
-    setTitle(formData.title || null)
-    setDescription(formData.description || null)
+    setKeyword(formData.keyword || null)
 
     if (formData.genreName) {
       setGenreName(formData.genreName)
@@ -84,8 +80,7 @@ export default function Home() {
     reset()
     setAuthorName(null)
     setGenreName(null)
-    setTitle(null)
-    setDescription(null)
+    setKeyword(null)
     setPage(1)
     setActiveCategory('Tất cả')
   }
@@ -229,21 +224,23 @@ export default function Home() {
           </p>
 
           <form
-            className='mt-10 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4'
+            className='mt-10 max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4'
             onSubmit={handleSubmit(handleSearch)}
           >
+            {/* Dòng 1: Input keyword */}
             <div className='relative'>
               <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
-                <BookOpen className='h-5 w-5 text-slate-400' />
+                <Search className='h-5 w-5 text-slate-400' />
               </div>
               <input
                 type='text'
-                placeholder='Tìm theo tên sách...'
+                placeholder='Tìm theo tên hoặc mô tả...'
                 className='w-full py-2.5 pl-10 pr-4 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition duration-300'
-                {...register('title')}
+                {...register('keyword')}
               />
             </div>
 
+            {/* Dòng 1: Input author */}
             <div className='relative'>
               <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
                 <User className='h-5 w-5 text-slate-400' />
@@ -256,19 +253,8 @@ export default function Home() {
               />
             </div>
 
-            <div className='relative'>
-              <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
-                <FileText className='h-5 w-5 text-slate-400' />
-              </div>
-              <input
-                type='text'
-                placeholder='Tìm theo mô tả...'
-                className='w-full py-2.5 pl-10 pr-4 bg-slate-800 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition duration-300'
-                {...register('description')}
-              />
-            </div>
-
-            <div className='md:col-span-3 flex gap-4 justify-center mt-4'>
+            {/* Dòng 2: Nút tìm kiếm và xóa lọc */}
+            <div className='md:col-span-2 flex gap-4 justify-center mt-2'>
               <button
                 type='submit'
                 className='flex items-center justify-center gap-2 px-8 py-3 bg-teal-500 text-white font-bold rounded-full hover:bg-teal-600 transition-colors duration-300 shadow-lg transform hover:scale-105'
@@ -333,7 +319,10 @@ export default function Home() {
                     {/* ========== START: THÊM NÚT YÊU THÍCH VÀO CARD SÁCH ========== */}
                     <div className='relative overflow-hidden rounded-lg shadow-lg transform group-hover:-translate-y-2 transition-transform duration-300'>
                       <img
-                        src={book.images[0]?.imageUrl || 'https://via.placeholder.com/150'}
+                        src={
+                          book.images[0]?.imageUrl ||
+                          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTed7ytmvKOdAhKD4DibQ3xEuFuBozev9PjLp3a00xpu94MUrWzIcX_pideQYkSK91kydw&usqp=CAU'
+                        }
                         alt={book.title}
                         className='w-full aspect-[2/3] object-cover'
                       />

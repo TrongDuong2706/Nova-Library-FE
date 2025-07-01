@@ -24,25 +24,25 @@ export const getOneBook = (bookId: string) => http.get<BookOneResponse>(`/books/
 export const getBooksWithFilter = (
   authorName: string | null = null,
   genreName: string | null = null,
-  title: string | null = null,
-  description: string | null = null,
+  keyword: string | null = null,
   page: number,
   size: number
 ) =>
   http.get<BookResponse>('/books/filter', {
-    params: { authorName, genreName, title, description, page, size }
+    params: { authorName, genreName, keyword, page, size }
   })
 
 export const getBooksWithAdminFilter = (
   authorName: string | null = null,
   genreName: string | null = null,
-  title: string | null = null,
+  keyword: string | null = null,
   status: number | null = null,
+  isbn: string | null = null,
   page: number,
   size: number
 ) =>
   http.get<BookResponse>('/books/filterAdmin', {
-    params: { authorName, genreName, title, status, page, size }
+    params: { authorName, genreName, keyword, status, isbn, page, size }
   })
 
 export const softDeleteBook = (bookId: string) => http.delete(`/books/${bookId}`)
@@ -53,3 +53,6 @@ export const getAllBookZeroStock = (page: number, size: number) =>
 
 export const getAllBookWithGenre = (genreName: string, page: number, size: number) =>
   http.get<BookResponse>('/books/getBookWithGenre', { params: { genreName, page, size } })
+
+export const getAllBookWithTitle = (title: string, page: number, size: number) =>
+  http.get<BookResponse>('/books/getBookByTitle', { params: { title, page, size } })

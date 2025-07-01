@@ -18,6 +18,9 @@ import ListUser from './pages/Admin/AdminUserManagement/ListUser'
 import { useContext } from 'react'
 import { AppContext } from './contexts/app.context'
 import { isAdmin } from './utils/util'
+import CreateBook from './pages/Admin/AdminBookManagement/CreateBook'
+import EditBook from './pages/Admin/AdminBookManagement/EditBook'
+import CreateBorrow from './pages/Admin/AdminBorrowManagement/CreateBorrow'
 
 export default function useRouteElements() {
   function RejectedRoute() {
@@ -109,10 +112,34 @@ export default function useRouteElements() {
           )
         },
         {
+          path: 'books/create',
+          element: (
+            <AdminLayout>
+              <CreateBook />
+            </AdminLayout>
+          )
+        },
+        {
+          path: 'books/edit/:bookId',
+          element: (
+            <AdminLayout>
+              <EditBook />
+            </AdminLayout>
+          )
+        },
+        {
           path: 'borrows',
           element: (
             <AdminLayout>
               <ListBorrow />
+            </AdminLayout>
+          )
+        },
+        {
+          path: 'borrows/create',
+          element: (
+            <AdminLayout>
+              <CreateBorrow />
             </AdminLayout>
           )
         },
