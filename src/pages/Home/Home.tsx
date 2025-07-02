@@ -339,7 +339,9 @@ export default function Home() {
                       <h3 className='text-md font-bold text-slate-100 truncate group-hover:text-teal-400 transition-colors duration-300'>
                         {book.title}
                       </h3>
-                      <p className='text-sm text-slate-400'>{book.author.name}</p>
+                      <p className='text-sm text-slate-400'>
+                        <span>{book.authors.map((author) => author.name).join(', ')}</span>
+                      </p>
                     </div>
                   </div>
                 </Link>

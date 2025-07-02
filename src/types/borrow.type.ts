@@ -35,8 +35,8 @@ export interface Book {
   description: string
   createdAt: string
   images: Image[]
-  author: Author
-  genre: Genre
+  authors: Author[]
+  genres: Genre[]
 }
 
 export interface Image {

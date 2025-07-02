@@ -132,10 +132,16 @@ export default function MyBorrowDetail({ isOpen, onClose, borrowId }: BorrowDeta
                         {book.title}
                       </h4>
                       <p className='text-sm text-slate-400 mt-1'>
-                        <span className='font-medium'>Tác giả:</span> {book.author.name}
+                        <span className='font-medium'>Tác giả:</span>{' '}
+                        {book.authors.map((author, index) => (
+                          <span key={index}>{author.name}</span>
+                        ))}
                       </p>
                       <p className='text-sm text-slate-400'>
-                        <span className='font-medium'>Thể loại:</span> {book.genre.name}
+                        <span className='font-medium'>Thể loại:</span>{' '}
+                        {book.genres.map((genre, index) => (
+                          <span key={index}>{genre.name}</span>
+                        ))}
                       </p>
                     </div>
                   ))}

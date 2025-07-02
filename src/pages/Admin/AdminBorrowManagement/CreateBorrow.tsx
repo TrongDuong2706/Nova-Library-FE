@@ -178,7 +178,9 @@ export default function CreateBorrow() {
                         />
                         <div>
                           <p className='font-semibold text-gray-800 text-sm'>{book.title}</p>
-                          <p className='text-xs text-gray-500'>Tác giả: {book.author.name}</p>
+                          <p className='text-xs text-gray-500'>Tác giả: {book.authors.map((author, index)=> (
+                        <span key = {index}> {author.name}</span>
+                      ))}</p>
                           <p className={`text-xs font-semibold ${book.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
                             Tồn kho: {book.stock}
                           </p>
@@ -246,7 +248,9 @@ export default function CreateBorrow() {
                     />
                     <div className='flex-1 min-w-0'>
                       <p className='font-semibold text-gray-800 text-sm truncate'>{book.title}</p>
-                      <p className='text-xs text-gray-500 truncate'>Tác giả: {book.author.name}</p>
+                      <p className='text-xs text-gray-500 truncate'>Tác giả: {book.authors.map((author, index)=> (
+                        <span key = {index}> {author.name}</span>
+                      ))}</p>
                     </div>
                   </div>
                   <button

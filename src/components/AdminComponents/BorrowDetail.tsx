@@ -80,10 +80,16 @@ export default function BorrowDetailPopup({ isOpen, onClose, borrowId }: BorrowD
                   )}
                   <h4 className='font-medium text-gray-900'>{book.title}</h4>
                   <p className='text-sm text-gray-600'>
-                    <span className='font-semibold'>Tác giả:</span> {book.author.name}
+                    <span className='font-semibold'>Tác giả:</span>{' '}
+                    {book.authors.map((author, index) => (
+                      <span key={index}>{author.name}</span>
+                    ))}
                   </p>
                   <p className='text-sm text-gray-600'>
-                    <span className='font-semibold'>Thể loại:</span> {book.genre.name}
+                    <span className='font-semibold'>Thể loại:</span>{' '}
+                    {book.genres.map((genre, index) => (
+                      <span key={index}>{genre.name}</span>
+                    ))}
                   </p>
                 </div>
               ))}

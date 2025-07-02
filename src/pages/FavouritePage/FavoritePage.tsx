@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react' // Thêm useMemo
 import { Heart, Trash2, BookOpen, ChevronLeft } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getMyFavorite, deleteFavorite } from '../../apis/favorite.api'
-import Pagination from '../../components/Pagination/Pagination'
-import BorrowPopup from '../../components/BorrowPopup/BorrowPopup'
-import Swal from 'sweetalert2'
 import { Link } from 'react-router-dom'
+import Swal from 'sweetalert2'
+import { getMyFavorite, deleteFavorite } from '../../apis/favorite.api'
+import BorrowPopup from '../../components/BorrowPopup/BorrowPopup'
+import Pagination from '../../components/Pagination/Pagination'
 
 export default function FavoritePage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -14,8 +14,8 @@ export default function FavoritePage() {
 
   const queryClient = useQueryClient()
 
-  const { data } = useQuery({
-    queryKey: ['favorites', page],
+  const { data, isLoading } = useQuery({
+    queryKey: ['favorites', page, size],
     queryFn: () => getMyFavorite(page, size)
   })
 
@@ -30,9 +30,9 @@ export default function FavoritePage() {
         timer: 3000,
         showConfirmButton: false
       })
+      // Invalidate để query lại dữ liệu mới
       queryClient.invalidateQueries({ queryKey: ['favorites'] })
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       const message = error?.response?.data?.message || 'Đã xảy ra lỗi khi xóa.'
       Swal.fire({
@@ -43,22 +43,30 @@ export default function FavoritePage() {
     }
   })
 
+  // Dữ liệu sách yêu thích
   const favorites = data?.data.result.elements || []
 
+  // Xử lý sự kiện xóa
   const handleRemoveFavorite = (e: React.MouseEvent<HTMLButtonElement>, bookId: string) => {
-    e.preventDefault()
+    e.preventDefault() // Ngăn chặn hành vi mặc định của Link
+    e.stopPropagation() // Ngăn sự kiện nổi bọt lên Link
     removeFavorite(bookId)
   }
 
-  const selectedBooks = favorites.map((book) => ({
-    id: book.bookId,
-    title: book.title,
-    author: book.author.name,
-    imageUrl: book.images[0]?.imageUrl || ''
-  }))
+  // Chuẩn bị dữ liệu cho BorrowPopup, tính toán lại chỉ khi favorites thay đổi
+  const selectedBooks = useMemo(() => {
+    return favorites.map((book: any) => ({
+      id: book.bookId,
+      title: book.title,
+      // Tạo chuỗi tên các tác giả
+      author: book.authors?.map((author: any) => author.name).join(', ') || 'N/A',
+      imageUrl: book.images?.[0]?.imageUrl || ''
+    }))
+  }, [favorites])
 
   return (
     <div className='bg-slate-900 text-white min-h-screen font-sans'>
+      {/* Header */}
       <header className='sticky top-0 z-50 bg-slate-900/80 backdrop-blur-sm border-b border-slate-800'>
         <div className='container mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='flex items-center justify-between h-16'>
@@ -78,8 +86,9 @@ export default function FavoritePage() {
       </header>
 
       <main className='container mx-auto px-6 py-10'>
+        {/* Tiêu đề trang */}
         <div className='text-center mb-12'>
-          <Heart className='mx-auto h-16 w-16 text-red-400 ' />
+          <Heart className='mx-auto h-16 w-16 text-red-400' />
           <h1 className='text-4xl md:text-5xl font-extrabold tracking-tight'>Danh sách Yêu thích</h1>
           <p className='mt-3 max-w-2xl mx-auto text-lg text-slate-400'>
             Những cuốn sách đã chiếm trọn trái tim của bạn.
@@ -87,7 +96,11 @@ export default function FavoritePage() {
         </div>
 
         <div className='max-w-7xl mx-auto'>
-          {favorites.length === 0 ? (
+          {/* Xử lý trạng thái loading */}
+          {isLoading ? (
+            <div className='text-center py-16 text-slate-500'>Đang tải danh sách...</div>
+          ) : favorites.length === 0 ? (
+            // Trường hợp không có sách yêu thích
             <div className='text-center py-16'>
               <p className='text-slate-500 text-xl italic'>Bạn chưa có sách yêu thích nào.</p>
               <Link
@@ -98,6 +111,7 @@ export default function FavoritePage() {
               </Link>
             </div>
           ) : (
+            // Hiển thị danh sách
             <>
               <div className='text-center mb-8'>
                 <button
@@ -110,12 +124,14 @@ export default function FavoritePage() {
               </div>
 
               <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8'>
-                {favorites.map((book) => (
-                  <Link to={`/book/${book.bookId}`} key={book.id}>
+                {favorites.map((book: any) => (
+                  <Link to={`/book/${book.bookId}`} key={book.favoriteId}>
+                    {' '}
+                    {/* Dùng favoriteId làm key */}
                     <div className='group cursor-pointer'>
                       <div className='relative overflow-hidden rounded-lg shadow-lg transform group-hover:-translate-y-2 transition-transform duration-300'>
                         <img
-                          src={book.images[0]?.imageUrl || 'https://via.placeholder.com/150'}
+                          src={book.images?.[0]?.imageUrl || 'https://via.placeholder.com/400x600.png?text=No+Image'}
                           alt={book.title}
                           className='w-full aspect-[2/3] object-cover'
                         />
@@ -132,7 +148,10 @@ export default function FavoritePage() {
                         <h3 className='text-md font-bold text-slate-100 truncate group-hover:text-teal-400 transition-colors duration-300'>
                           {book.title}
                         </h3>
-                        <p className='text-sm text-slate-400'>{book.author.name}</p>
+                        {/* Hiển thị chuỗi tên các tác giả */}
+                        <p className='text-sm text-slate-400 truncate'>
+                          {book.authors?.map((author: any) => author.name).join(', ')}
+                        </p>
                       </div>
                     </div>
                   </Link>
@@ -142,17 +161,22 @@ export default function FavoritePage() {
           )}
         </div>
 
-        <Pagination
-          currentPage={data?.data.result.currentPage ?? 0}
-          totalPages={data?.data.result.totalPages ?? 1}
-          hasNextPage={data?.data.result.hasNextPage ?? false}
-          hasPreviousPage={data?.data.result.hasPreviousPage ?? false}
-          onPageChange={(page) => setPage(page + 1)}
-        />
+        {/* Phân trang */}
+        {favorites.length > 0 && (
+          <Pagination
+            currentPage={data?.data.result.currentPage ?? 0}
+            totalPages={data?.data.result.totalPages ?? 1}
+            hasNextPage={data?.data.result.hasNextPage ?? false}
+            hasPreviousPage={data?.data.result.hasPreviousPage ?? false}
+            onPageChange={(page) => setPage(page + 1)}
+          />
+        )}
       </main>
 
+      {/* Popup mượn sách */}
       <BorrowPopup isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} selectedBooks={selectedBooks} />
 
+      {/* Footer */}
       <footer className='mt-16 py-8 border-t border-slate-800'>
         <div className='container mx-auto px-6 text-center text-slate-500'>
           <p>© {new Date().getFullYear()} Thư Viện Tri Thức. All rights reserved.</p>

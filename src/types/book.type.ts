@@ -26,8 +26,8 @@ export interface Book {
   description: string
   createdAt: string
   images: Image[]
-  author: Author
-  genre: Genre
+  authors: Author[]
+  genres: Genre[]
   isbn: string
   publicationDate: string
   status: number
@@ -38,8 +38,8 @@ export interface Favorite {
   id: string
   title: string
   description: string
-  author: Author
-  genre: Genre
+  authors: Author[]
+  genres: Genre[]
   bookId: string
   images: Image[]
 }
@@ -66,8 +66,8 @@ export type BookSingleResponse = {
   id: string
   title: string
   description: string
-  author: Author
-  genre: Genre
+  authors: Author[]
+  genres: Genre[]
   createAt: Date
   stock: number
   status: number
@@ -81,8 +81,8 @@ export type SimpleBookSingleResponse = {
   title: string
   description: string
   bookId: string
-  author: Author
-  genre: Genre
+  authors: Author[]
+  genres: Genre[]
   images: Image[]
 }
 

@@ -139,9 +139,9 @@ export default function BorrowPopup({ isOpen, onClose, selectedBooks }: BorrowMo
                 <input
                   type='text'
                   {...register('studentCode', { required: 'Vui lòng nhập mã số sinh viên' })}
-                  className='bg-slate-700 border border-slate-600 text-white text-sm rounded-lg block w-full p-2.5'
+                  readOnly
+                  className='bg-slate-700 border border-slate-600 text-white text-sm rounded-lg block w-full p-2.5 cursor-not-allowed opacity-70'
                   placeholder='VD: STU-F82420F4'
-                  disabled
                 />
 
                 {errors.studentCode && <p className='text-red-500 text-xs'>{errors.studentCode.message}</p>}

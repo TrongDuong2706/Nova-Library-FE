@@ -1,21 +1,27 @@
-// src/pages/Admin/EditBook/EditBook.tsx
-
-import { useState, useEffect, useRef } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useState, useEffect } from 'react'
+import { useForm, useWatch, Controller } from 'react-hook-form'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
+import Select from 'react-select'
 import { Info } from 'lucide-react'
-import { getAuthorsByName } from '../../../apis/author.api' // Thay đổi API
+import { getAuthorsByName } from '../../../apis/author.api'
 import { getGenres } from '../../../apis/genre.api'
 import { getOneBook, updateBook } from '../../../apis/books.api'
-import type { Author } from '../../../types/author.type' // Import type
+import type { Author } from '../../../types/author.type'
 
+// Định dạng dữ liệu cho react-select
+type SelectOption = {
+  value: string
+  label: string
+}
+
+// Định dạng dữ liệu của form
 interface BookFormData {
   title: string
   description: string
-  authorId: string
-  genreId: string
+  authorIds: string[]
+  genreIds: string[]
   images: FileList
   stock: number
   status: number
@@ -33,47 +39,93 @@ export default function EditBook() {
     handleSubmit,
     reset,
     setValue,
-    control, // Cần cho useWatch
-    formState: { errors }
-  } = useForm<BookFormData>()
-
-  // --- Logic tìm kiếm tác giả ---
-  const [authorSearchTerm, setAuthorSearchTerm] = useState('')
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
-  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false)
-  const authorInputRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const timerId = setTimeout(() => {
-      setDebouncedSearchTerm(authorSearchTerm)
-    }, 300)
-    return () => clearTimeout(timerId)
-  }, [authorSearchTerm])
-
-  const handleSelectAuthor = (author: Author) => {
-    setValue('authorId', author.id, { shouldValidate: true })
-    setAuthorSearchTerm(author.name)
-    setIsSuggestionsOpen(false)
-  }
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (authorInputRef.current && !authorInputRef.current.contains(event.target as Node)) {
-        setIsSuggestionsOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-  // --- Kết thúc Logic tìm kiếm tác giả ---
-
-  // --- Logic xem trước ảnh ---
-  const [newImagePreviews, setNewImagePreviews] = useState<string[]>([])
-  const imagesWatch = useWatch({
     control,
-    name: 'images'
+    formState: { errors }
+  } = useForm<BookFormData>({
+    defaultValues: {
+      authorIds: [],
+      genreIds: []
+    }
   })
 
+  // --- Logic quản lý State ---
+  const [selectedAuthors, setSelectedAuthors] = useState<SelectOption[]>([])
+  const [authorSearchTerm, setAuthorSearchTerm] = useState('')
+
+  // --- Logic Fetch dữ liệu ---
+
+  // 1. Lấy dữ liệu sách cần chỉnh sửa
+  const {
+    data: bookData,
+    isLoading: isBookLoading,
+    isError: isBookError
+  } = useQuery({
+    queryKey: ['book', bookId],
+    queryFn: () => getOneBook(bookId!),
+    enabled: !!bookId
+  })
+
+  // 2. Lấy danh sách gợi ý tác giả dựa trên từ khóa tìm kiếm
+  const { data: authorSuggestionsData, isLoading: isSearchingAuthors } = useQuery({
+    queryKey: ['authorSuggestions', authorSearchTerm],
+    queryFn: () => getAuthorsByName(authorSearchTerm, 1, 20),
+    enabled: !!authorSearchTerm,
+    staleTime: 1000 * 30
+  })
+
+  // 3. Lấy toàn bộ danh sách thể loại
+  const { data: genresData } = useQuery({ queryKey: ['genres'], queryFn: () => getGenres(1, 100) })
+
+  // --- Logic xử lý và định dạng dữ liệu cho Select ---
+  const authorSuggestionOptions: SelectOption[] =
+    authorSuggestionsData?.data.result.elements.map((author: Author) => ({
+      value: author.id,
+      label: author.name
+    })) || []
+
+  const authorDisplayOptions = [
+    ...selectedAuthors,
+    ...authorSuggestionOptions.filter((opt) => !selectedAuthors.some((selected) => selected.value === opt.value))
+  ]
+
+  const genreOptions: SelectOption[] =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    genresData?.data.result.elements.map((genre: any) => ({
+      value: genre.id,
+      label: genre.name
+    })) || []
+
+  // --- Logic điền dữ liệu ban đầu vào form ---
+  useEffect(() => {
+    if (bookData) {
+      const { title, description, authors, genres, stock, status, isbn, publicationDate } = bookData.data.result
+
+      // Chuyển đổi dữ liệu tác giả và thể loại ban đầu sang định dạng của react-select
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const initialAuthors = authors.map((author: any) => ({ value: author.id, label: author.name }))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const initialGenres = genres.map((genre: any) => ({ value: genre.id, label: genre.name }))
+
+      // Cập nhật state UI
+      setSelectedAuthors(initialAuthors)
+
+      // Reset toàn bộ form với dữ liệu ban đầu
+      reset({
+        title,
+        description,
+        authorIds: initialAuthors.map((a) => a.value),
+        genreIds: initialGenres.map((g) => g.value),
+        stock,
+        status,
+        isbn,
+        publicationDate: new Date(publicationDate).toISOString().split('T')[0]
+      })
+    }
+  }, [bookData, reset])
+
+  // --- Logic xem trước ảnh mới ---
+  const [newImagePreviews, setNewImagePreviews] = useState<string[]>([])
+  const imagesWatch = useWatch({ control, name: 'images' })
   useEffect(() => {
     if (imagesWatch && imagesWatch.length > 0) {
       const newPreviews = Array.from(imagesWatch).map((file) => URL.createObjectURL(file))
@@ -85,48 +137,8 @@ export default function EditBook() {
       setNewImagePreviews([])
     }
   }, [imagesWatch])
-  // --- Kết thúc Logic xem trước ảnh ---
 
-  // Lấy dữ liệu sách để điền vào form
-  const {
-    data: bookData,
-    isLoading: isBookLoading,
-    isError: isBookError
-  } = useQuery({
-    queryKey: ['book', bookId],
-    queryFn: () => getOneBook(bookId!),
-    enabled: !!bookId
-  })
-  const { data: authorSuggestionsData, isLoading: isSearchingAuthors } = useQuery({
-    queryKey: ['authorSuggestions', debouncedSearchTerm],
-    queryFn: () => getAuthorsByName(debouncedSearchTerm, 1, 10),
-    enabled: !!debouncedSearchTerm && debouncedSearchTerm !== bookData?.data.result.author.name,
-    staleTime: 1000 * 60
-  })
-
-  // Lấy danh sách thể loại (không cần lấy tất cả tác giả nữa)
-  const { data: genresData } = useQuery({ queryKey: ['genres'], queryFn: () => getGenres(1, 100) })
-
-  // Điền dữ liệu vào form sau khi fetch thành công
-  useEffect(() => {
-    if (bookData) {
-      const { title, description, author, genre, stock, status, isbn, publicationDate } = bookData.data.result
-      reset({
-        title,
-        description,
-        authorId: author.id,
-        genreId: genre.id,
-        stock,
-        status,
-        isbn,
-        publicationDate: new Date(publicationDate).toISOString().split('T')[0]
-      })
-      // Điền sẵn tên tác giả vào ô tìm kiếm
-      setAuthorSearchTerm(author.name)
-    }
-  }, [bookData, reset])
-
-  // Mutation để cập nhật sách
+  // --- Logic Mutation và Submit ---
   const { mutate, isPending } = useMutation({
     mutationFn: (formData: FormData) => updateBook(bookId!, formData),
     onSuccess: () => {
@@ -143,7 +155,6 @@ export default function EditBook() {
       queryClient.invalidateQueries({ queryKey: ['book', bookId] })
       navigate('/admin/books')
     },
-
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra!'
@@ -164,27 +175,35 @@ export default function EditBook() {
     const book = {
       title: data.title,
       description: data.description,
-      authorId: data.authorId,
-      genreId: data.genreId,
+      authorIds: data.authorIds,
+      genreIds: data.genreIds,
       stock: data.stock,
       status: data.status ? 1 : 0,
       isbn: data.isbn,
       publicationDate: data.publicationDate
     }
     formData.append('books', new Blob([JSON.stringify(book)], { type: 'application/json' }))
-    // Chỉ gửi ảnh mới nếu người dùng đã chọn
     if (data.images && data.images.length > 0) {
       for (let i = 0; i < data.images.length; i++) {
         formData.append('images', data.images[i])
       }
     } else {
-      // Đảm bảo vẫn gửi key 'images' để backend không lỗi
       formData.append('images', new Blob([]), '')
     }
-
     mutate(formData)
   })
 
+  // Hàm xử lý khi người dùng thay đổi lựa chọn tác giả
+  const handleAuthorChange = (selectedOptions: readonly SelectOption[]) => {
+    setSelectedAuthors(selectedOptions as SelectOption[])
+    setValue(
+      'authorIds',
+      selectedOptions.map((opt) => opt.value),
+      { shouldValidate: true }
+    )
+  }
+
+  // --- Render ---
   if (isBookLoading) return <div className='p-8 text-center'>Đang tải dữ liệu sách...</div>
   if (isBookError || !bookData) return <div className='p-8 text-center text-red-500'>Không thể tải dữ liệu sách.</div>
 
@@ -192,7 +211,8 @@ export default function EditBook() {
     <div className='bg-white rounded-2xl shadow-md p-6 max-w-6xl mx-auto'>
       <h2 className='text-2xl font-semibold text-gray-800 mb-6 border-b pb-4'>✏️ Chỉnh sửa sách</h2>
       <form className='space-y-4' onSubmit={onSubmit}>
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          {/* ... Tiêu đề, ISBN ... */}
           <div>
             <label className='text-sm font-medium text-gray-700'>Tiêu đề</label>
             <input
@@ -215,66 +235,61 @@ export default function EditBook() {
             {errors.isbn && <p className='text-red-500 text-sm mt-1'>{errors.isbn.message}</p>}
           </div>
 
-          <div className='relative' ref={authorInputRef}>
-            <label className='text-sm font-medium text-gray-700'>Tác giả</label>
-            <input
-              type='text'
-              className='w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500'
-              placeholder='Nhập tên tác giả để tìm kiếm...'
-              value={authorSearchTerm}
-              onChange={(e) => {
-                setAuthorSearchTerm(e.target.value)
-                setIsSuggestionsOpen(true)
-                setValue('authorId', '')
-              }}
-              onFocus={() => setIsSuggestionsOpen(true)}
-              autoComplete='off'
-            />
-            <input type='hidden' {...register('authorId', { required: 'Vui lòng chọn một tác giả' })} />
-            {errors.authorId && <p className='text-red-500 text-sm mt-1'>{errors.authorId.message}</p>}
-
-            {isSuggestionsOpen && (
-              <div className='absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto'>
-                {isSearchingAuthors ? (
-                  <div className='p-3 text-sm text-gray-500 italic text-center'>Đang tìm...</div>
-                ) : authorSuggestionsData?.data.result.elements.length === 0 ? (
-                  <div className='p-3 text-sm text-gray-500 italic text-center'>Không tìm thấy tác giả.</div>
-                ) : (
-                  <ul>
-                    {authorSuggestionsData?.data.result.elements.map((author) => (
-                      <li
-                        key={author.id}
-                        className='px-4 py-2 hover:bg-purple-100 cursor-pointer text-sm'
-                        onClick={() => handleSelectAuthor(author)}
-                      >
-                        {author.name}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-          </div>
-
+          {/* Tác giả */}
           <div>
-            <label className='text-sm font-medium text-gray-700'>Thể loại</label>
-            <select
-              {...register('genreId', { required: 'Chọn thể loại' })}
-              className='w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg'
-            >
-              <option value=''>-- Chọn thể loại --</option>
-              {genresData?.data.result.elements.map((genre) => (
-                <option key={genre.id} value={genre.id}>
-                  {genre.name}
-                </option>
-              ))}
-            </select>
+            <label className='text-sm font-medium text-gray-700'>Tác giả (chọn nhiều)</label>
+            <Controller
+              name='authorIds'
+              control={control}
+              rules={{ validate: (value) => value.length > 0 || 'Vui lòng chọn ít nhất một tác giả' }}
+              render={() => (
+                <Select
+                  isMulti
+                  options={authorDisplayOptions}
+                  value={selectedAuthors}
+                  isLoading={isSearchingAuthors}
+                  onInputChange={(value) => setAuthorSearchTerm(value)}
+                  onChange={handleAuthorChange}
+                  className='mt-1'
+                  placeholder='Nhập để tìm và chọn tác giả...'
+                  noOptionsMessage={() => (authorSearchTerm ? 'Không tìm thấy tác giả' : 'Nhập để tìm kiếm')}
+                />
+              )}
+            />
+            {errors.authorIds && <p className='text-red-500 text-sm mt-1'>{errors.authorIds.message as string}</p>}
           </div>
+
+          {/* Thể loại */}
+          <div>
+            <label className='text-sm font-medium text-gray-700'>Thể loại (chọn nhiều)</label>
+            <Controller
+              name='genreIds'
+              control={control}
+              rules={{ validate: (value) => value.length > 0 || 'Vui lòng chọn ít nhất một thể loại' }}
+              render={({ field }) => (
+                <Select
+                  isMulti
+                  options={genreOptions}
+                  onChange={(selectedOptions) => field.onChange(selectedOptions.map((option) => option.value))}
+                  value={genreOptions.filter((option) => field.value?.includes(option.value))}
+                  className='mt-1'
+                  placeholder='-- Chọn thể loại --'
+                />
+              )}
+            />
+            {errors.genreIds && <p className='text-red-500 text-sm mt-1'>{errors.genreIds.message as string}</p>}
+          </div>
+
+          {/* ... Số lượng, Ngày xuất bản ... */}
           <div>
             <label className='text-sm font-medium text-gray-700'>Số lượng</label>
             <input
               type='number'
-              {...register('stock', { required: 'Số lượng là bắt buộc', valueAsNumber: true })}
+              {...register('stock', {
+                required: 'Số lượng là bắt buộc',
+                valueAsNumber: true,
+                min: { value: 0, message: 'Số lượng không âm' }
+              })}
               className='w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg'
             />
             {errors.stock && <p className='text-red-500 text-sm mt-1'>{errors.stock.message}</p>}
@@ -289,6 +304,8 @@ export default function EditBook() {
             {errors.publicationDate && <p className='text-red-500 text-sm mt-1'>{errors.publicationDate.message}</p>}
           </div>
         </div>
+
+        {/* ... Mô tả, Ảnh, Status, Buttons ... */}
         <div>
           <label className='text-sm font-medium text-gray-700'>Mô tả</label>
           <textarea
@@ -305,7 +322,8 @@ export default function EditBook() {
             <span className='block text-xs text-gray-500 mb-2'>Ảnh hiện tại:</span>
             {bookData.data.result.images.length > 0 ? (
               <div className='grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3'>
-                {bookData.data.result.images.map((image) => (
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {bookData.data.result.images.map((image: any) => (
                   <div key={image.imageUrl} className='aspect-w-1 aspect-h-1'>
                     <img
                       src={image.imageUrl}

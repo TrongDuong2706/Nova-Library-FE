@@ -6,7 +6,7 @@ import Swal from 'sweetalert2'
 
 import Pagination from '../../../components/Pagination/Pagination'
 import AddBookPopup from '../../../components/AdminComponents/AddBookPopup'
-import EditBookPopup from '../../../components/AdminComponents/EditBookPopup'
+// import EditBookPopup from '../../../components/AdminComponents/EditBookPopup'
 
 import type { Book } from '../../../types/book.type'
 import { getBooksWithAdminFilter, softDeleteBook } from '../../../apis/books.api'
@@ -26,8 +26,8 @@ export default function ListBook() {
   const [page, setPage] = useState(1)
   const size = 5
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  // const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
+  // const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   const { register, handleSubmit, reset } = useForm<FilterFormData>()
 
@@ -273,8 +273,22 @@ export default function ListBook() {
                   </td>
                   <td className='px-4 py-3'>{book.title}</td>
                   <td className='px-4 py-3 truncate max-w-xs'>{book.description}</td>
-                  <td className='px-4 py-3'>{book.author.name}</td>
-                  <td className='px-4 py-3'>{book.genre.name}</td>
+                  <td className='px-4 py-3'>
+                    {book.authors.map((author, index) => (
+                      <span key={index}>
+                        {author.name}
+                        {index < book.authors.length - 1 && ', '}
+                      </span>
+                    ))}
+                  </td>
+                  <td className='px-4 py-3'>
+                    {book.genres.map((genre, index) => (
+                      <span key={index}>
+                        {genre.name}
+                        {index < book.genres.length - 1 && ', '}
+                      </span>
+                    ))}
+                  </td>
                   <td className='px-4 py-3'>{new Date(book.createdAt).toLocaleDateString()}</td>
                   <td className='px-4 py-3'>{new Date(book.publicationDate).toLocaleDateString()}</td>
                   <td className='px-4 py-3 text-center'>{book.stock}</td>
@@ -321,14 +335,14 @@ export default function ListBook() {
       </div>
 
       <AddBookPopup isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-      <EditBookPopup
+      {/* <EditBookPopup
         isOpen={isEditModalOpen}
         bookId={selectedBookId}
         onClose={() => {
           setIsEditModalOpen(false)
           setSelectedBookId(null)
         }}
-      />
+      /> */}
     </div>
   )
 }
