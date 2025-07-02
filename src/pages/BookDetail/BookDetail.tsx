@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react' // Thêm useMemo
+import { useState, useMemo, useContext } from 'react' // Thêm useMemo
 import { ChevronLeft, BookOpen, BookCheck } from 'lucide-react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import Slider from 'react-slick'
 import { getOneBook, getAllBookWithGenre } from '../../apis/books.api'
 import BorrowPopup from '../../components/BorrowPopup/BorrowPopup'
+import { AppContext } from '../../contexts/app.context'
 
 export default function BookDetail() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -16,6 +17,8 @@ export default function BookDetail() {
     enabled: !!bookId
   })
 
+  const navigate = useNavigate()
+  const { isAuthenticated } = useContext(AppContext)
   const book = bookData?.data.result
 
   // Lấy thể loại đầu tiên trong danh sách để tìm sách liên quan
@@ -114,7 +117,13 @@ export default function BookDetail() {
               {/* Nút mượn sách */}
               <div className='flex items-center gap-4 mb-8'>
                 <button
-                  onClick={() => setIsModalOpen(true)}
+                  onClick={() => {
+                    if (!isAuthenticated) {
+                      navigate('/login', { replace: true })
+                      return
+                    }
+                    setIsModalOpen(true)
+                  }}
                   className='flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-teal-500 text-white font-bold rounded-full hover:bg-teal-600 transition-all duration-300 shadow-lg transform hover:scale-105'
                 >
                   <BookCheck className='h-5 w-5' />

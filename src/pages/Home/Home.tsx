@@ -122,6 +122,11 @@ export default function Home() {
 
   const handleFavoriteClick = (e: React.MouseEvent<HTMLButtonElement>, bookId: string) => {
     e.preventDefault() // Ngăn chuyển trang
+    if (!isAuthenticated) {
+      // Nếu chưa đăng nhập, chuyển hướng sang trang đăng nhập
+      navigate('/login', { replace: true })
+      return
+    }
     addFavoriteMutate(bookId)
   }
   //logout
