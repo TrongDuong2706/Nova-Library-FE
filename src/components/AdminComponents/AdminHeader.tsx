@@ -17,7 +17,7 @@ export default function AdminHeader() {
 
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'success',
         title: 'Đăng xuất thành công!',
         showConfirmButton: false,

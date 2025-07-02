@@ -28,7 +28,7 @@ export default function AddAuthorPopup({ isOpen, onClose }: AuthorModalProps) {
     onSuccess: () => {
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'success',
         title: 'Tác giả đã được thêm thành công!',
         showConfirmButton: false,

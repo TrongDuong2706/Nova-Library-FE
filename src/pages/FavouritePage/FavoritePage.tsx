@@ -26,7 +26,7 @@ export default function FavoritePage() {
         icon: 'success',
         title: 'Đã xóa khỏi yêu thích!',
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         timer: 3000,
         showConfirmButton: false
       })

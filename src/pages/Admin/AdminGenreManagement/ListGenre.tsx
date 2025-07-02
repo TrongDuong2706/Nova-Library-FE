@@ -32,7 +32,7 @@ export default function ListGenre() {
       queryClient.invalidateQueries({ queryKey: ['genres'] })
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'success',
         title: 'Xóa Thể loại thành công!',
         showConfirmButton: false,

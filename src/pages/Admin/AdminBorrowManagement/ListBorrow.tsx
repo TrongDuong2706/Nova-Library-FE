@@ -37,7 +37,7 @@ export default function ListBorrow() {
         timer: 2000,
         showConfirmButton: false,
         toast: true,
-        position: 'top-end'
+        position: 'bottom-end'
       })
       queryClient.invalidateQueries({ queryKey: ['borrows'] })
     },
@@ -87,7 +87,7 @@ export default function ListBorrow() {
         timer: 2000,
         showConfirmButton: false,
         toast: true,
-        position: 'top-end'
+        position: 'bottom-end'
       })
       queryClient.invalidateQueries({ queryKey: ['borrows'] })
     },
@@ -206,7 +206,9 @@ export default function ListBorrow() {
                       ? 'Hiện đang mượn'
                       : borrow.status === 'RETURNED'
                         ? 'Đã trả'
-                        : borrow.status}
+                        : borrow.status === 'OVERDUE'
+                          ? 'Quá hạn'
+                          : borrow.status}
                   </td>
 
                   <td className='px-4 py-3 rounded-r-xl'>

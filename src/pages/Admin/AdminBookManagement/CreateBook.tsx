@@ -122,7 +122,7 @@ export default function CreateBook() {
     onSuccess: () => {
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'success',
         title: '📚 Sách đã được thêm!',
         showConfirmButton: false,
@@ -138,7 +138,7 @@ export default function CreateBook() {
       const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra!'
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'error',
         title: errorMessage,
         showConfirmButton: false,

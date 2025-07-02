@@ -80,7 +80,7 @@ export default function EditUserPopup({ isOpen, onClose, userId }: EditUserPopup
     onSuccess: () => {
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'success',
         title: 'Cập nhật người dùng thành công!',
         showConfirmButton: false,

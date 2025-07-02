@@ -28,7 +28,7 @@ export default function AddGenrePopup({ isOpen, onClose }: GenreModalProps) {
     onSuccess: () => {
       Swal.fire({
         toast: true,
-        position: 'top-end', // có thể là 'top-end', 'bottom-end', 'top-start',...
+        position: 'bottom-end', // có thể là 'bottom-end', 'bottom-end', 'top-start',...
         icon: 'success',
         title: 'Add Genre successfully!',
         showConfirmButton: false,

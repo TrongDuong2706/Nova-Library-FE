@@ -51,7 +51,7 @@ export default function AddUserPopup({ isOpen, onClose }: AddUserPopupProps) {
     onSuccess: () => {
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'success',
         title: 'Thêm người dùng thành công!',
         showConfirmButton: false,

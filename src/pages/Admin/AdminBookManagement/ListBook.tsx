@@ -74,7 +74,7 @@ export default function ListBook() {
       queryClient.invalidateQueries({ queryKey: ['books'] })
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'success',
         title: 'Xóa sách thành công!',
         showConfirmButton: false,

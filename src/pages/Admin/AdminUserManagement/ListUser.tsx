@@ -57,7 +57,7 @@ export default function ListUser() {
       queryClient.invalidateQueries({ queryKey: ['users'] })
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'success',
         title: 'Xóa người dùng thành công!',
         showConfirmButton: false,

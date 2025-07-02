@@ -55,7 +55,7 @@ export default function BorrowPopup({ isOpen, onClose, selectedBooks }: BorrowMo
     onSuccess: () => {
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'success',
         title: 'Mượn sách thành công!',
         showConfirmButton: false,
@@ -75,7 +75,7 @@ export default function BorrowPopup({ isOpen, onClose, selectedBooks }: BorrowMo
 
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'error',
         title: errorMessage,
         showConfirmButton: false,

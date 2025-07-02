@@ -144,7 +144,7 @@ export default function EditBook() {
     onSuccess: () => {
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'success',
         title: 'Sách đã được cập nhật!',
         showConfirmButton: false,
@@ -160,7 +160,7 @@ export default function EditBook() {
       const errorMessage = error?.response?.data?.message || 'Có lỗi xảy ra!'
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'error',
         title: errorMessage,
         showConfirmButton: false,

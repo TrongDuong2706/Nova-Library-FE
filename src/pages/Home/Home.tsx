@@ -99,7 +99,7 @@ export default function Home() {
       // queryClient.invalidateQueries(['favoriteBooks']) // nếu bạn có query này
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'success',
         title: 'Thêm vào yêu thích thành công!',
         showConfirmButton: false,
@@ -134,7 +134,7 @@ export default function Home() {
 
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'success',
         title: 'Đăng xuất thành công!',
         showConfirmButton: false,

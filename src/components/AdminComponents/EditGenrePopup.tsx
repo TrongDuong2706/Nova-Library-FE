@@ -44,7 +44,7 @@ export default function EditGenrePopup({ isOpen, onClose, genreId }: EditGenrePo
     onSuccess: () => {
       Swal.fire({
         toast: true,
-        position: 'top-end', // có thể là 'top-end', 'bottom-end', 'top-start',...
+        position: 'bottom-end', // có thể là 'bottom-end', 'bottom-end', 'top-start',...
         icon: 'success',
         title: 'Genre updated successfully!',
         showConfirmButton: false,

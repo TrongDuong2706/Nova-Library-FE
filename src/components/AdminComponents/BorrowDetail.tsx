@@ -38,7 +38,14 @@ export default function BorrowDetailPopup({ isOpen, onClose, borrowId }: BorrowD
                 <strong>ID:</strong> {borrow.id}
               </div>
               <div>
-                <strong>Trạng thái:</strong> {borrow.status}
+                <strong>Trạng thái:</strong>{' '}
+                {borrow.status === 'BORROWED'
+                  ? 'Hiện đang mượn'
+                  : borrow.status === 'RETURNED'
+                    ? 'Đã trả'
+                    : borrow.status === 'OVERDUE'
+                      ? 'Quá hạn'
+                      : borrow.status}
               </div>
               <div>
                 <strong>Ngày mượn:</strong> {borrow.borrowDate}
@@ -80,16 +87,12 @@ export default function BorrowDetailPopup({ isOpen, onClose, borrowId }: BorrowD
                   )}
                   <h4 className='font-medium text-gray-900'>{book.title}</h4>
                   <p className='text-sm text-gray-600'>
-                    <span className='font-semibold'>Tác giả:</span>{' '}
-                    {book.authors.map((author, index) => (
-                      <span key={index}>{author.name}</span>
-                    ))}
+                    <span className='font-semibold'>Tác giả: </span>
+                    <span>{book.authors.map((a) => a.name).join(', ')}</span>
                   </p>
                   <p className='text-sm text-gray-600'>
-                    <span className='font-semibold'>Thể loại:</span>{' '}
-                    {book.genres.map((genre, index) => (
-                      <span key={index}>{genre.name}</span>
-                    ))}
+                    <span className='font-semibold'>Thể loại: </span>
+                    <span>{book.genres.map((g) => g.name).join(', ')}</span>
                   </p>
                 </div>
               ))}

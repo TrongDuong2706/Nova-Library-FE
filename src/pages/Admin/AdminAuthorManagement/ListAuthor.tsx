@@ -31,7 +31,7 @@ export default function ListAuthor() {
       queryClient.invalidateQueries({ queryKey: ['authors'] })
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'success',
         title: 'Xóa Tác Giả thành công!',
         showConfirmButton: false,

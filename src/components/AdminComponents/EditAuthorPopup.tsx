@@ -45,7 +45,7 @@ export default function EditAuthorPopup({ isOpen, onClose, authorId }: EditAutho
     onSuccess: () => {
       Swal.fire({
         toast: true,
-        position: 'top-end',
+        position: 'bottom-end',
         icon: 'success',
         title: 'Tác giả đã được cập nhật!',
         showConfirmButton: false,
