@@ -1,8 +1,10 @@
 import { useForm } from 'react-hook-form'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Swal from 'sweetalert2'
 import { BookCheck, X } from 'lucide-react'
 import { createBorrow } from '../../apis/borrow.api'
+import { getMyInfor } from '../../apis/auth.api'
+import { useEffect } from 'react'
 
 interface BorrowModalProps {
   isOpen: boolean
@@ -25,8 +27,21 @@ export default function BorrowPopup({ isOpen, onClose, selectedBooks }: BorrowMo
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors }
   } = useForm<BorrowFormData>()
+
+  const { data: userInfo } = useQuery({
+    queryKey: ['my-info'],
+    queryFn: getMyInfor
+  })
+
+  // Gán studentCode khi có dữ liệu
+  useEffect(() => {
+    if (userInfo?.data?.result.studentCode) {
+      setValue('studentCode', userInfo.data.result.studentCode)
+    }
+  }, [userInfo, setValue])
 
   const { mutate, isPending } = useMutation({
     mutationFn: (data: BorrowFormData) => {
@@ -124,9 +139,11 @@ export default function BorrowPopup({ isOpen, onClose, selectedBooks }: BorrowMo
                 <input
                   type='text'
                   {...register('studentCode', { required: 'Vui lòng nhập mã số sinh viên' })}
-                  className='bg-slate-700 border border-slate-600 text-white text-sm rounded-lg block w-full p-2.5'
-                  placeholder='VD: STU-F82420F4'
+                  readOnly
+                  className='bg-slate-700 border border-slate-600 text-white text-sm rounded-lg block w-full p-2.5 cursor-not-allowed opacity-70'
+                  placeholder='STU-F82420F4'
                 />
+
                 {errors.studentCode && <p className='text-red-500 text-xs'>{errors.studentCode.message}</p>}
               </div>
               <div>

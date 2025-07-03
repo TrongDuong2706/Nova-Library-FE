@@ -18,6 +18,7 @@ type FilterFormData = {
   authorName: string
   genreName: string
   status: string // Form value luôn là string
+  isbn: string
 }
 
 export default function ListBook() {
@@ -26,6 +27,7 @@ export default function ListBook() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [filterIsbn, setFilterIsbn] = useState('')
 
   const { register, handleSubmit, reset } = useForm<FilterFormData>()
 
@@ -38,7 +40,7 @@ export default function ListBook() {
   const queryClient = useQueryClient()
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['books', { filterTitle, filterAuthorName, filterGenreName, filterStatus, page }],
+    queryKey: ['books', { filterTitle, filterAuthorName, filterGenreName, filterStatus, filterIsbn, page }],
     queryFn: () => {
       // ===== ĐÂY LÀ PHẦN SỬA ĐỔI QUAN TRỌNG =====
       // Chuyển đổi status từ string sang number | null trước khi gọi API
@@ -49,7 +51,8 @@ export default function ListBook() {
         filterAuthorName, // tham số đầu tiên
         filterGenreName, // tham số thứ hai
         filterTitle, // tham số thứ ba
-        numericStatus, // tham số thứ tư (đã chuyển đổi)
+        numericStatus,
+        filterIsbn, // tham số thứ tư (đã chuyển đổi)
         page,
         size
       )
@@ -106,10 +109,12 @@ export default function ListBook() {
     setFilterAuthorName(formData.authorName || '')
     setFilterGenreName(formData.genreName || '')
     setFilterStatus(formData.status || '') // Cập nhật state string
+    setFilterIsbn(formData.isbn || '') // 🔧 Thêm dòng này để lọc theo ISBN
   }
 
   const handleClearFilter = () => {
-    reset({ title: '', authorName: '', genreName: '', status: '' })
+    reset({ title: '', authorName: '', genreName: '', status: '', isbn: '' })
+    setFilterIsbn('')
     setPage(1)
     setFilterTitle('')
     setFilterAuthorName('')
@@ -145,6 +150,13 @@ export default function ListBook() {
             placeholder='✍️ Tác giả'
             className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500'
           />
+          <input
+            {...register('isbn')}
+            type='text'
+            placeholder='🔢 ISBN'
+            className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500'
+          />
+
           <select
             {...register('genreName')}
             className='w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-purple-500 focus:border-purple-500'

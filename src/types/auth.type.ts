@@ -13,4 +13,5 @@ export type RegisterResponse = SuccessResponse<{
 export type getMyInforResponse = SuccessResponse<{
   firstName: string
   lastName: boolean
+  studentCode: string
 }>

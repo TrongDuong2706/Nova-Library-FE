@@ -38,11 +38,12 @@ export const getBooksWithAdminFilter = (
   genreName: string | null = null,
   title: string | null = null,
   status: number | null = null,
+  isbn: string | null = null,
   page: number,
   size: number
 ) =>
   http.get<BookResponse>('/books/filterAdmin', {
-    params: { authorName, genreName, title, status, page, size }
+    params: { authorName, genreName, title, status, isbn, page, size }
   })
 
 export const softDeleteBook = (bookId: string) => http.delete(`/books/${bookId}`)
